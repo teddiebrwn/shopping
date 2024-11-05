@@ -1,26 +1,17 @@
 const express = require("express");
 const router = express.Router();
-const {
-    getAllUsers,
-    getUserById,
-    updateUser,
-    deleteUser,
-    createAdminUser,
-} = require("../controllers/adminController");
+const adminController = require("../controllers/adminController");
 
-// // Để lấy tất cả người dùng (chỉ dành cho quản trị viên)
-router.get("/users", getAllUsers);
-
-// Để có được một người dùng cụ thể theo ID (chỉ dành cho quản trị viên)
-router.get("/users/:id", getUserById);
-
-// Cập nhật thông tin người dùng (chỉ dành cho quản trị viên)
-router.put("/users/:id", updateUser);
-
-// Xóa người dùng theo ID (chỉ dành cho quản trị viên)
-router.delete("/users/:id", deleteUser);
-
-// Tạo người dùng quản trị mới (chỉ dành cho quản trị viên)
-router.post("/createAdmin", createAdminUser);
+// Registration
+router.post("/registerAdmin", adminController.registerAdmin);
+//Verification
+//Login
+router.post("/loginAdmin", adminController.loginAdmin);
+//Get
+router.get("/findAdmin", adminController.getAllAdmins);
+// Delete based on username/mail/phone
+router.delete("/deleteAdmin", adminController.deleteAdmin);
+// Delete inactivate admins
+router.delete("/inactiveAdmin", adminController.deleteInactiveAdmins);
 
 module.exports = router;
