@@ -1,11 +1,12 @@
 const Admin = require("../models/Admin");
-const jwt = require("jsonwebtoken"); // Nhớ import jwt
-const moment = require("moment"); //lib format date
+const jwt = require("jsonwebtoken");
+const bcrypt = require("bcryptjs");
+const moment = require("moment");
 
-// Registration
+// **Register Admin**
 exports.registerAdmin = async (req, res) => {
   const {
-    role,
+    role = "admin", // Mặc định là "admin"
     email,
     phone,
     username,
@@ -16,19 +17,30 @@ exports.registerAdmin = async (req, res) => {
   } = req.body;
 
   try {
-    // const Model = Admin gán cứng
-    const Model = role === "admin" || role === "superadmin" ? Admin : User;
-    // already account
-    const existingAdmin = await Model.findOne({
-      $or: [{ email }, { phone }, { username }],
-    });
-    if (existingAdmin) {
-      return res.status(400).json({
-        message: "Admin -> Email, phone, or username already in use.",
-      });
+    // Kiểm tra giá trị nào cần kiểm tra trùng lặp
+    const duplicateCheck = [];
+    if (email) duplicateCheck.push({ email });
+    if (phone) duplicateCheck.push({ phone });
+    if (username) duplicateCheck.push({ username });
+
+    // Yêu cầu ít nhất 1 trong 3 giá trị: email, phone, hoặc username
+    if (duplicateCheck.length === 0) {
+      return res
+        .status(400)
+        .json({ message: "Cần ít nhất một trong email, phone hoặc username." });
     }
-    //create a new admin
-    const newAdmin = new Model({
+
+    // Kiểm tra trùng lặp trong cơ sở dữ liệu
+    const existingAdmin = await Admin.findOne({ $or: duplicateCheck });
+    if (existingAdmin) {
+      return res
+        .status(400)
+        .json({ message: "Admin -> Email, phone, hoặc username đã tồn tại." });
+    }
+
+    // Tạo Admin mới
+    const newAdmin = new Admin({
+      role,
       email,
       phone,
       username,
@@ -37,130 +49,130 @@ exports.registerAdmin = async (req, res) => {
       lastName,
       dateOfBirth,
     });
-    await newAdmin.save();
-    res
-      .status(201)
-      .json({ message: "Registration successful.", user: newAdmin });
+    await newAdmin.save(); // Lưu vào database
+
+    res.status(201).json({
+      message: "Tạo tài khoản thành công.",
+      user: { _id: newAdmin._id, username: newAdmin.username },
+    });
   } catch (error) {
-    res
-      .status(500)
-      .json({ message: "Registration failed.", error: error.message });
+    res.status(500).json({
+      message: "Đăng ký thất bại.",
+      error: error.message,
+    });
   }
 };
 
-// Login
+// **Login Admin**
 exports.loginAdmin = async (req, res) => {
-  const { role, identifier, password, twoFactorCode } = req.body;
-  try {
-    // Gán cứng Model cho admin
-    const Model = role === "admin" || role === "superadmin" ? Admin : User;
+  const { identifier, password } = req.body; // `identifier` có thể là email, phone hoặc username
 
-    // Tìm admin dựa trên email, phone hoặc username
-    const admin = await Model.findOne({
+  try {
+    // Tìm admin theo email, phone, hoặc username
+    const admin = await Admin.findOne({
       $or: [
         { email: identifier },
         { phone: identifier },
         { username: identifier },
       ],
     });
-
     if (!admin) {
-      return res.status(404).json({ message: "User not found." });
+      return res.status(404).json({ message: "Không tìm thấy tài khoản." });
     }
 
-    // Xác thực mật khẩu
+    // So sánh mật khẩu
     const isMatch = await admin.matchPassword(password);
     if (!isMatch) {
-      return res.status(401).json({ message: "Incorrect password." });
+      return res.status(401).json({ message: "Mật khẩu không chính xác." });
     }
 
-    // Nếu xác thực hai yếu tố được kích hoạt, kiểm tra mã
-    if (admin.twoFactorCode && !admin.verifyTwoFactorCode(twoFactorCode)) {
-      return res.status(401).json({ message: "Invalid two-factor code." });
-    }
-
-    // Tạo JWT sau khi đăng nhập thành công
+    // Tạo JWT token
     const token = jwt.sign(
-      { id: admin._id, role: admin.role }, //payload
+      { id: admin._id, role: admin.role },
       process.env.JWT_SECRET,
       { expiresIn: "1h" }
     );
+
     res.status(200).json({
-      message: "Login successful.",
+      message: "Đăng nhập thành công.",
       token,
       admin: {
         _id: admin._id,
         username: admin.username,
         email: admin.email,
         phone: admin.phone,
-        // add information send client
       },
     });
   } catch (error) {
-    res.status(500).json({ message: "Login failed.", error: error.message });
+    res.status(500).json({
+      message: "Đăng nhập thất bại.",
+      error: error.message,
+    });
   }
 };
 
-//Delete all admins
-exports.deleteAdmin = async (req, res) => {
-  const { role, identifier } = req.body;
+// **Get All Admins**
+exports.getAllAdmins = async (req, res) => {
   try {
-    // const Model = Admin gán cứng
-    const Model = role === "admin" || role === "superadmin" ? Admin : User;
-    const admin = await Model.findOneAndDelete({
+    const admins = await Admin.find(); // Lấy tất cả Admins
+    const formattedAdmins = admins.map((admin) => ({
+      _id: admin._id,
+      username: admin.username,
+      email: admin.email,
+      phone: admin.phone,
+      dateOfBirth: moment(admin.dateOfBirth).format("DD-MM-YYYY"), // Format ngày sinh
+      createdAt: admin.createdAt,
+    }));
+    res.status(200).json({
+      message: "Lấy danh sách Admins thành công.",
+      admins: formattedAdmins,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Không thể lấy danh sách Admins.",
+      error: error.message,
+    });
+  }
+};
+
+// **Delete Admin**
+exports.deleteAdmin = async (req, res) => {
+  const { identifier } = req.body; // `identifier` là email, phone hoặc username
+
+  try {
+    const admin = await Admin.findOneAndDelete({
       $or: [
-        { email: identifier }, //1 trong 3 cái nào cũng được email/phone/username
+        { email: identifier },
         { phone: identifier },
         { username: identifier },
       ],
     });
     if (!admin) {
-      return res.status(404).json({ message: "Admin not found." });
+      return res.status(404).json({ message: "Không tìm thấy Admin." });
     }
-    res
-      .status(200)
-      .json({ message: "Admin deleted successfully.", deletedAdmin: admin });
-  } catch (error) {
-    res.status(500).json({ message: "Deletion failed.", error: error.message });
-  }
-};
-
-exports.getAllAdmins = async (req, res) => {
-  try {
-    // Get all admins from the database
-    const admins = await Admin.find();
-    // Format date of each account
-    const formattedAdmins = admins.map((admin) => {
-      return {
-        _id: admin._id,
-        username: admin.username,
-        email: admin.email,
-        phone: admin.phone,
-        dateOfBirth: moment(admin.dateOfBirth).format("DD-MM-YYYY"), // Format date
-        createdAt: admin.createdAt,
-      };
-    });
     res.status(200).json({
-      message: "Admins retrieved successfully.",
-      admins: formattedAdmins,
+      message: "Xóa Admin thành công.",
+      deletedAdmin: admin,
     });
   } catch (error) {
     res.status(500).json({
-      message: "Error fetching admins.",
+      message: "Xóa Admin thất bại.",
       error: error.message,
     });
   }
-  // Delete inactive admins
 };
-exports.deleteInactiveAdmins = async (req, res) => {
+// **Xóa các Admin không còn hoạt động**
+exports.inactiveAdmin = async (req, res) => {
   try {
+    // Xóa tất cả Admin có trường `active` là false
     const result = await Admin.deleteMany({ active: false });
+
     res.status(200).json({
-      message: `${result.deletedCount} inactive admins deleted.`,
+      message: `${result.deletedCount} inactive admins đã được xóa.`,
     });
   } catch (error) {
     res.status(500).json({
-      message: "Error deleting inactive admins.",
+      message: "Xóa các inactive admin thất bại.",
       error: error.message,
     });
   }

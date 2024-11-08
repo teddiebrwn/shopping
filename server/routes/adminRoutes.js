@@ -1,17 +1,26 @@
 const express = require("express");
 const router = express.Router();
-const adminController = require("../controllers/adminController");
+const {
+  registerAdmin,
+  loginAdmin,
+  getAllAdmins,
+  deleteAdmin,
+  inactiveAdmin,
+} = require("../controllers/adminController");
 
-// Registration
-router.post("/registerAdmin", adminController.registerAdmin);
-//Verification
-//Login
-router.post("/loginAdmin", adminController.loginAdmin);
-//Get
-router.get("/findAdmin", adminController.getAllAdmins);
-// Delete based on username/mail/phone
-router.delete("/deleteAdmin", adminController.deleteAdmin);
-// Delete inactivate admins
-router.delete("/inactiveAdmin", adminController.deleteInactiveAdmins);
+// **Đăng ký Admin**
+router.post("/registerAdmin", registerAdmin);
+
+// **Đăng nhập Admin**
+router.post("/loginAdmin", loginAdmin);
+
+// **Lấy danh sách tất cả Admin**
+router.get("/getAllAdmins", getAllAdmins);
+
+// **Xóa một Admin (bằng email, phone hoặc username)**
+router.delete("/deleteAdmin", deleteAdmin);
+
+// **Xóa các Admin không hoạt động**
+router.delete("/inactiveAdmins", inactiveAdmin);
 
 module.exports = router;
