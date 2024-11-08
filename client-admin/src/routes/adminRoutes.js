@@ -1,3 +1,4 @@
+// src/routes/adminRoutes.js
 import Login from "../pages/Login";
 import Register from "../pages/Register";
 import Homepage from "../pages/Homepage";
