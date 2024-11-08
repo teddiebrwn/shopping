@@ -1,0 +1,87 @@
+/* src/components/HomePage/HomePage.css */
+
+/* General Styles */
+.homepage {
+    height: 100vh; /* Chiều cao toàn màn hình */
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between; 
+}
+  /* Hero Banner */
+  .hero-banner {
+    background-image: url('https://pos.nvncdn.com/0406df-94299/bn/20240729_LstwbHwa.gif'); /* Đảm bảo đường dẫn chính xác */
+    background-size: cover; /* Hình ảnh phủ đầy khu vực */
+    background-position: center; /* Đặt hình ảnh ở giữa */
+    background-repeat: no-repeat; /* Không lặp lại hình ảnh */
+    width: 100%; /* Chiều rộng toàn bộ màn hình */
+    height: 100%; /* Chiều cao toàn bộ của trang */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .hero-content {
+    text-align: center;
+    color: white;
+  }
+  
+  .hero-banner h1 {
+    font-size: 3em;
+    margin-bottom: 0.5em;
+  }
+  
+  .hero-banner p {
+    font-size: 1.5em;
+    margin-bottom: 1em;
+  }
+  
+  .shop-now-btn {
+    padding: 10px 20px;
+    font-size: 1em;
+    background-color: #333;
+    color: white;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .shop-now-btn:hover {
+    background-color: #555;
+  }
+  
+  /* Product List Styles (nếu cần cải thiện) */
+  .product-list {
+    display: flex;
+    justify-content: space-around;
+    flex-wrap: wrap;
+    gap: 20px;
+  }
+  
+  .product-item {
+    width: 200px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s;
+  }
+  
+  .product-item img {
+    width: 100%;
+    height: auto;
+    border-radius: 5px;
+  }
+  
+  .product-item:hover {
+    transform: scale(1.05);
+  }
+  
+  .product-item h3 {
+    font-size: 1.2em;
+    margin: 10px 0;
+  }
+  
+  .product-item p {
+    font-size: 1em;
+    color: #333;
+  }
+  

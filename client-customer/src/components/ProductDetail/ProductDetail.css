@@ -1,0 +1,24 @@
+/* src/components/ProductDetail/ProductDetail.css */
+.product-detail {
+    padding: 20px;
+    text-align: center;
+  }
+  
+  .product-detail img {
+    width: 300px;
+    height: auto;
+    margin-bottom: 20px;
+  }
+  
+  .product-detail button {
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    cursor: pointer;
+  }
+  
+  .product-detail button:hover {
+    background-color: #0056b3;
+  }
+  

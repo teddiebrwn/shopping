@@ -1,0 +1,62 @@
+/* ProductList.css */
+body, html {
+  height: 100%;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  font-family: Arial, sans-serif;
+}
+
+.product-list {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* Hiển thị 3 cột sản phẩm để sản phẩm lớn và rõ ràng hơn */
+  gap: 60px; /* Tăng khoảng cách giữa các thẻ để thoáng hơn */
+  padding: 60px; /* Tăng phần padding xung quanh để bố cục thoáng hơn */
+  width: 100%;
+  max-width: 1400px; /* Đặt chiều rộng tối đa để bố cục không quá lớn trên màn hình lớn */
+  margin: 0 auto; /* Căn giữa bố cục sản phẩm */
+  flex-grow: 1;
+  overflow-y: auto; /* Cho phép cuộn dọc nếu nội dung quá dài */
+}
+
+.product-item {
+  background: #ffffff; /* Đổi sang màu trắng để rõ ràng hơn */
+  border-radius: 15px; /* Tăng bán kính để tạo sự mềm mại */
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Tăng kích thước bóng để tạo độ nổi cho thẻ */
+  padding: 20px; /* Tăng phần đệm để nội dung thoáng hơn */
+  text-align: center;
+  transition: transform 0.3s, box-shadow 0.3s; /* Tăng thời gian chuyển tiếp để mượt mà hơn */
+}
+
+.product-item img {
+  max-width: 100%;
+  height: 400px; /* Đặt chiều cao lớn hơn để sản phẩm rõ ràng hơn như mong muốn */
+  object-fit: cover; /* Đảm bảo hình ảnh được bao phủ đầy đủ trong khung */
+  border-radius: 10px; /* Tăng bán kính bo tròn của hình ảnh */
+  margin-bottom: 15px;
+}
+
+.product-item:hover {
+  transform: scale(1.05); /* Tăng tỷ lệ phóng to khi hover để gây chú ý hơn */
+  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2); /* Tăng bóng khi hover để thẻ nổi bật hơn */
+}
+
+.product-item h3 {
+  font-size: 1.5rem; /* Tăng kích thước chữ của tiêu đề sản phẩm để rõ hơn */
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.product-item p {
+  font-size: 1.2rem; /* Tăng kích thước chữ của giá sản phẩm để dễ đọc hơn */
+  color: #555;
+}
+
+footer {
+  background: #333;
+  color: #fff;
+  text-align: center;
+  padding: 20px;
+  margin-top: auto;
+  width: 100%;
+}

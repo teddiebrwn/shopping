@@ -1,42 +1,162 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/* App.css */
 
-.App {
-  text-align: center;
+/* Reset styles to ensure consistent appearance across browsers */
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: Arial, sans-serif;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
+/* Main container that holds the entire application */
+.app-container {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+  min-height: 100vh;  /* Ensures the container always fills the viewport height */
 }
 
-.App-link {
-  color: #61dafb;
+/* Content container to ensure main content fills available space */
+.main-content {
+  flex: 1;  /* Allows this section to grow and take available space */
+  padding: 20px;  /* Optional padding for content spacing */
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
+/* Footer styles to make it always at the bottom */
+footer {
+  background-color: #000;  /* Black background for footer */
+  color: #fff;  /* White text color */
+  text-align: center;  /* Centered content */
+  padding: 20px;  /* Padding around footer content */
+  width: 100%;
+  position: relative;  /* Positions it at the end of the document flow */
+  bottom: 0;
+}
+
+/* Styling for the header to adjust the alignment of items */
+.header-container {
+  display: flex;
+  justify-content: space-between;  /* Distribute space between items */
+  align-items: center;  /* Align items vertically in the center */
+  padding: 10px 20px;  /* Padding for some space around items */
+  background-color: #fff;  /* White background for the header */
+  border-bottom: 1px solid #ccc;  /* Light border at the bottom for separation */
+}
+
+/* Logo in the header should be in the middle */
+.header-logo {
+  flex: 1;  /* Takes up space to keep logo centered */
+  text-align: center;
+  font-weight: bold;
+  font-size: 1.5em;
+}
+
+/* Hamburger menu button on the left */
+.header-hamburger {
+  cursor: pointer;
+  font-size: 1.5em;
+}
+
+/* Right-side icons for search, cart, login */
+.header-icons {
+  flex: 1;  /* Takes up space to keep everything aligned */
+  display: flex;
+  justify-content: flex-end;  /* Align items to the right */
+  gap: 15px;  /* Space between icons */
+}
+
+.header-icons svg {
+  cursor: pointer;  /* Changes cursor to pointer on hover */
+}
+
+/* Side Menu Styles */
+.side-menu {
+  position: fixed;
+  left: 0;
+  top: 0;
+  height: 100%;
+  width: 250px;  /* Width of the side menu */
+  background-color: #fff;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  z-index: 100;  /* Make sure it appears above other content */
+  transform: translateX(-100%);
+  transition: transform 0.3s ease-in-out;  /* Smooth slide-in and slide-out effect */
+}
+
+.side-menu.open {
+  transform: translateX(0);  /* Shows the menu */
+}
+
+.side-menu ul {
+  list-style: none;
+  padding: 0;
+}
+
+.side-menu ul li {
+  margin: 15px 0;
+  font-size: 1.2em;
+}
+
+.side-menu ul li a {
+  text-decoration: none;
+  color: #000;
+}
+
+/* Overlay to cover the screen when side menu is open */
+.side-menu-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 50;
+  display: none;
+}
+
+.side-menu-overlay.open {
+  display: block;
+}
+
+/* Product list styles to ensure proper layout */
+.product-list {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);  /* Display 5 products in a row */
+  gap: 20px;  /* Gap between products */
+}
+
+.product-item {
+  background: #f9f9f9;  /* Light gray background for each product */
+  border-radius: 8px;  /* Rounded corners */
+  padding: 15px;
+  text-align: center;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);  /* Subtle shadow */
+  transition: transform 0.2s ease-in-out;  /* Smooth scale effect on hover */
+}
+
+.product-item:hover {
+  transform: scale(1.05);  /* Slightly increases size on hover */
+}
+
+.product-item img {
+  width: 100%;
+  height: auto;
+  border-radius: 5px;
+  margin-bottom: 10px;
+}
+
+/* Specific adjustments for mobile responsiveness */
+@media (max-width: 768px) {
+  .header-container {
+    padding: 10px;
   }
-  to {
-    transform: rotate(360deg);
+
+  .product-list {
+    grid-template-columns: repeat(2, 1fr);  /* Show 2 products per row for small screens */
+  }
+
+  .side-menu {
+    width: 200px;  /* Slightly narrower side menu for smaller screens */
   }
 }

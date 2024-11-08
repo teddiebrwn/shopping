@@ -1,0 +1,77 @@
+/* Header Styles */
+.header-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 30px;
+  background-color: #fff; /* Màu trắng cho header */
+  position: fixed; /* Cố định vị trí header */
+  top: 0;
+  width: 100%;
+  z-index: 1000; /* Đảm bảo header luôn nằm trên cùng */
+  box-shadow: 0px 1px 5px rgba(0, 0, 0, 0.1); /* Bóng mờ dưới header */
+}
+
+.header-left {
+  flex: 1;
+}
+
+.header-logo {
+  flex: 2;
+  text-align: center;
+  font-weight: bold;
+  font-size: 1.8em; /* Kích thước font lớn hơn */
+}
+
+.header-icons {
+  flex: 1;
+  display: flex;
+  justify-content: flex-end;
+  gap: 25px; /* Khoảng cách giữa các icon */
+}
+
+.header-icon {
+  font-size: 1.5em; /* Tăng kích thước icon */
+}
+
+/* Horizontal Menu Styles */
+.horizontal-menu {
+  position: relative;
+  top: 75px; /* Sát ngay dưới thanh header */
+  width: 100%;
+  background-color: #fff;
+  box-shadow: 0px 1px 5px rgba(0, 0, 0, 0.1);
+  border-top: 1px solid #e0e0e0;
+  border-bottom: 1px solid #e0e0e0;
+  z-index: 999;
+  display: none; /* Ẩn menu khi chưa mở */
+}
+
+.horizontal-menu.open {
+  display: block; /* Hiện menu khi mở */
+}
+
+.horizontal-menu ul {
+  list-style: none;
+  display: flex;
+  justify-content: space-evenly; /* Chia đều các mục menu */
+  padding: 0;
+  margin: 0;
+}
+
+.horizontal-menu ul li {
+  padding: 20px 0; /* Khoảng cách trên và dưới cho mỗi mục */
+  font-size: 1.3em; /* Kích thước font lớn hơn */
+  font-weight: bold; /* Chữ đậm */
+}
+
+.horizontal-menu ul li a {
+  text-decoration: none;
+  color: #000;
+  padding: 0 15px; /* Khoảng cách giữa mỗi link */
+}
+
+.horizontal-menu ul li a:hover {
+  color: #007bff; /* Màu khi hover */
+  border-bottom: 2px solid #007bff; /* Đường kẻ bên dưới khi hover */
+}
