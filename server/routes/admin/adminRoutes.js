@@ -6,7 +6,7 @@ const {
   getAllAdmins,
   deleteAdmin,
   inactiveAdmin,
-} = require("../controllers/adminController");
+} = require("../../controllers/adminController");
 
 // **Đăng ký Admin**
 router.post("/registerAdmin", registerAdmin);
