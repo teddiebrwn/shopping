@@ -6,85 +6,85 @@ const crypto = require("crypto");
 const adminSchema = new mongoose.Schema({
   username: {
     type: String,
-    unique: true, // Username phải là duy nhất
-    sparse: true, // Cho phép giá trị trống (nếu không cung cấp)
+    unique: true,
+    sparse: true,
     required: function () {
-      return !this.email && !this.phone; // Bắt buộc nếu không có email hoặc phone
+      return !this.email && !this.phone;
     },
     match: [
       /^@[\w]+$/,
       "Username must start with @ and contain only letters and numbers",
-    ], // Format validation
+    ],
   },
   email: {
     type: String,
-    unique: true, // Email phải là duy nhất
+    unique: true,
     sparse: true,
     required: function () {
-      return !this.username && !this.phone; // Bắt buộc nếu không có username hoặc phone
+      return !this.username && !this.phone;
     },
-    match: [/.+@.+\..+/, "Please enter a valid email address"], // Format validation
+    match: [/.+@.+\..+/, "Please enter a valid email address"],
   },
   phone: {
     type: String,
-    unique: true, // Số điện thoại phải là duy nhất
+    unique: true,
     sparse: true,
     required: function () {
-      return !this.username && !this.email; // Bắt buộc nếu không có username hoặc email
+      return !this.username && !this.email;
     },
     match: [
       /^\+84\d{9,10}$/,
       "Phone number must start with +84 and be 10-11 digits",
-    ], // Format validation
+    ],
   },
   password: {
     type: String,
-    required: [true, "Password is required"], // Bắt buộc
-    minlength: [6, "Password must be at least 6 characters long"], // Độ dài tối thiểu
+    required: [true, "Password is required"],
+    minlength: [6, "Password must be at least 6 characters long"],
   },
   firstName: {
     type: String,
-    required: [true, "First name is required"], // Bắt buộc
+    required: [true, "First name is required"],
   },
   lastName: {
     type: String,
-    required: [true, "Last name is required"], // Bắt buộc
+    required: [true, "Last name is required"],
   },
   dateOfBirth: {
     type: Date,
-    required: [true, "Date of birth is required"], // Bắt buộc
+    required: [true, "Date of birth is required"],
   },
   avatar: {
-    type: String, // URL ảnh đại diện (nếu có)
+    type: String,
   },
   address: {
-    type: String, // Địa chỉ (không bắt buộc)
+    type: String,
   },
   createdAt: {
     type: Date,
-    default: Date.now, // Ngày tạo tài khoản
+    default: Date.now,
   },
   emailVerified: {
     type: Boolean,
-    default: false, // Mặc định chưa xác thực email
+    default: false,
   },
   phoneVerified: {
     type: Boolean,
-    default: false, // Mặc định chưa xác thực số điện thoại
+    default: false,
   },
   active: {
     type: Boolean,
-    default: false, // Mặc định chưa active
+    default: false,
   },
   verificationCode: {
-    type: String, // Mã xác thực email/phone
+    type: String,
   },
-  twoFactorCode: String, // Mã xác thực hai yếu tố
-  twoFactorExpires: Date, // Hạn sử dụng mã xác thực hai yếu tố
+  twoFactorCode: String,
+  twoFactorExpires: Date,
   role: {
     type: String,
-    enum: ["admin", "superadmin"], // Chỉ chấp nhận giá trị admin hoặc superadmin
-    default: "admin", // Mặc định là admin
+    enum: ["admin", "superadmin"],
+    default: "admin",
   },
   permissions: {
     manageUsers: { type: Boolean, default: true },
@@ -93,46 +93,38 @@ const adminSchema = new mongoose.Schema({
   },
 });
 
-// Middleware - Hash mật khẩu trước khi lưu
 adminSchema.pre("save", async function (next) {
-  if (!this.isModified("password")) return next(); // Nếu password không thay đổi, bỏ qua
-  const salt = await bcrypt.genSalt(10); // Tạo salt
-  this.password = await bcrypt.hash(this.password, salt); // Hash mật khẩu
+  if (!this.isModified("password")) return next();
+  const salt = await bcrypt.genSalt(10);
+  this.password = await bcrypt.hash(this.password, salt);
   next();
 });
 
-// Middleware - Cập nhật trạng thái active
 adminSchema.pre("save", function (next) {
-  this.active = this.emailVerified || this.phoneVerified; // Active nếu email hoặc phone được xác minh
+  this.active = this.emailVerified || this.phoneVerified;
   next();
 });
 
-// Method - So sánh mật khẩu
 adminSchema.methods.matchPassword = async function (enteredPassword) {
-  return await bcrypt.compare(enteredPassword, this.password); // So sánh mật khẩu đã nhập
+  return await bcrypt.compare(enteredPassword, this.password);
 };
 
-// Method - Tạo mã OTP (Two-Factor Authentication)
 adminSchema.methods.generateTwoFactorCode = function () {
-  const code = crypto.randomBytes(3).toString("hex"); // Tạo mã ngẫu nhiên
-  this.twoFactorCode = code;
-  this.twoFactorExpires = Date.now() + 10 * 60 * 1000; // Mã có hạn trong 10 phút
+  const code = crypto.randomBytes(3).toString("hex");
+  this.twoFactorExpires = Date.now() + 10 * 60 * 1000;
   return code;
 };
 
-// Method - Kiểm tra mã OTP
 adminSchema.methods.verifyTwoFactorCode = function (code) {
-  if (this.twoFactorExpires < Date.now()) return false; // Mã hết hạn
-  return this.twoFactorCode === code; // So sánh mã
+  if (this.twoFactorExpires < Date.now()) return false;
+  return this.twoFactorCode === code;
 };
 
-// Method - Tạo mã xác minh email/phone
 adminSchema.methods.generateVerificationCode = function () {
   const code = crypto.randomBytes(3).toString("hex");
   this.verificationCode = code;
   return code;
 };
 
-// Export Model
 const Admin = mongoose.model("Admin", adminSchema);
 module.exports = Admin;

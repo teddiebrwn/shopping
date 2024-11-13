@@ -70,11 +70,8 @@ const userSchema = new mongoose.Schema({
   twoFactorCode: String,
   twoFactorExpires: Date,
 });
-// Apply middleware
 userSchema.pre("save", userMiddleware.updateActiveStatus);
 userSchema.pre("save", userMiddleware.hashPassword);
-
-// Add method to middleware
 userSchema.methods.matchPassword = userMiddleware.matchPassword;
 userSchema.methods.generateTwoFactorCode = userMiddleware.generateTwoFactorCode;
 userSchema.methods.verifyTwoFactorCode = userMiddleware.verifyTwoFactorCode;

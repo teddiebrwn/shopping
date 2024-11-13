@@ -34,12 +34,13 @@ const productSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
-  images: [{
-    type: String,
-  }],
+  images: [
+    {
+      type: String,
+    },
+  ],
 });
 
-// Middleware to update the updatedAt field
 productSchema.pre("save", function (next) {
   this.updatedAt = Date.now();
   next();
