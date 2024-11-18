@@ -34,21 +34,30 @@
   font-size: 1.5em; /* Tăng kích thước icon */
 }
 
+.hamburger-button {
+  display: block; /* Luôn hiển thị nút hamburger */
+  font-size: 2em;
+  cursor: pointer;
+  background: none;
+  border: none;
+}
+
 /* Horizontal Menu Styles */
 .horizontal-menu {
-  position: relative;
-  top: 75px; /* Sát ngay dưới thanh header */
+  position: fixed; /* Cố định menu ngay bên dưới header */
+  top: 60px; /* Đặt vị trí ngay dưới header */
   width: 100%;
   background-color: #fff;
   box-shadow: 0px 1px 5px rgba(0, 0, 0, 0.1);
   border-top: 1px solid #e0e0e0;
   border-bottom: 1px solid #e0e0e0;
   z-index: 999;
-  display: none; /* Ẩn menu khi chưa mở */
+  display: none; /* Mặc định ẩn menu */
+  transition: all 0.3s ease-in-out;
 }
 
 .horizontal-menu.open {
-  display: block; /* Hiện menu khi mở */
+  display: block; /* Hiện menu khi được mở */
 }
 
 .horizontal-menu ul {
@@ -74,4 +83,30 @@
 .horizontal-menu ul li a:hover {
   color: #007bff; /* Màu khi hover */
   border-bottom: 2px solid #007bff; /* Đường kẻ bên dưới khi hover */
+}
+
+/* Styles for Mobile */
+@media (max-width: 768px) {
+  .horizontal-menu {
+    display: none;
+    position: absolute;
+    top: 60px;
+    left: 0;
+    right: 0;
+    background: white;
+    text-align: center;
+  }
+
+  .horizontal-menu.open {
+    display: block;
+  }
+
+  .horizontal-menu ul {
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .horizontal-menu ul li {
+    padding: 10px 0;
+  }
 }

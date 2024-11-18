@@ -11,6 +11,7 @@ import AllProductsPage from './components/AllProductsPage/AllProductsPage';
 import CartPage from './components/Cart/Cart';
 import SearchPage from './components/Search/Search';
 import LoginPage from './components/Login/Login';
+import RegisterPage from './components/Register/Register';
 import ProductDetail from './components/ProductDetail/ProductDetail';
 import './App.css';
 
@@ -33,6 +34,7 @@ function App() {
             <Route path="/cart" element={<CartPage />} />
             <Route path="/search" element={<SearchPage />} />
             <Route path="/login" element={<LoginPage />} />
+            <Route path="/register" element={<RegisterPage />} />
             <Route path="/product/:id" element={<ProductDetail />} />
           </Routes>
         </main>
