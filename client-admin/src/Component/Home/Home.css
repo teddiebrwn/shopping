@@ -1,0 +1,131 @@
+/* Header */
+.home-header {
+  display: flex;
+  justify-content: space-between; /* Đẩy logo ở giữa và hai bên */
+  align-items: center;
+  padding: 10px 20px;
+  background-color: white;
+  border-bottom: 1px solid #ddd;
+  font-family: Arial, sans-serif;
+  font-size: 16px;
+  position: relative;
+  z-index: 10;
+}
+
+/* Logo */
+.home-header .logo {
+  font-size: 24px;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  position: absolute;
+  left: 50%; /* Căn giữa logo */
+  transform: translateX(-50%);
+}
+
+/* Phần bên trái (Menu, Tìm kiếm) */
+.home-header .left-section {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+/* Menu button */
+.menu-button {
+  position: fixed;
+  top: 10px;
+  left: 20px; /* Giữ cố định nút Menu */
+  display: flex;
+  align-items: center;
+  font-size: 16px;
+  cursor: pointer;
+  transition: transform 0.3s ease, color 0.3s ease; /* Hiệu ứng xoay và đổi màu */
+  z-index: 1001; /* Luôn trên menu */
+}
+
+.menu-button.open {
+  color: #3498db; /* Đổi màu khi mở */
+  transform: rotate(180deg); /* Xoay chữ khi mở menu */
+}
+
+/* Menu container */
+.menu-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 250px;
+  height: 100%; /* Chiếm toàn bộ chiều cao màn hình */
+  background-color: white;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+  transform: translateX(-100%); /* Ẩn menu mặc định */
+  transition: transform 0.3s ease;
+  z-index: 1000;
+}
+
+.menu-container.open {
+  transform: translateX(0); /* Hiển thị menu khi mở */
+}
+
+/* Danh sách menu */
+.menu-list {
+  list-style: none;
+  padding: 20px;
+  margin: 0;
+}
+
+.menu-list li {
+  font-size: 16px;
+  padding: 10px 0;
+  cursor: pointer;
+  color: #333;
+}
+
+.menu-list li:hover {
+  font-weight: bold;
+  color: #3498db;
+}
+
+/* Icon người dùng */
+.home-header .user-avatar {
+  width: 40px; /* Kích thước hình nhỏ */
+  height: 40px;
+  border-radius: 50%; /* Làm tròn hình ảnh */
+  cursor: pointer;
+  transition: transform 0.2s ease; /* Hiệu ứng hover */
+}
+
+.home-header .user-avatar:hover {
+  transform: scale(1.1); /* Phóng to nhẹ khi hover */
+}
+
+/* Dropdown menu */
+.user-dropdown {
+  position: absolute;
+  top: 40px; /* Hiển thị bên dưới icon */
+  right: 10px; /* Căn chỉnh menu so với góc phải */
+  background-color: white;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  padding: 10px 0;
+  min-width: 150px;
+}
+
+.user-dropdown .dropdown-button {
+  display: flex;
+  align-items: center; /* Căn giữa chữ và icon */
+  padding: 10px 15px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #333;
+  font-size: 14px;
+  text-align: left;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.user-dropdown .dropdown-button:hover {
+  background-color: #3498db;
+  color: white;
+}
