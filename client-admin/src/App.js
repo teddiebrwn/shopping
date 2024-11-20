@@ -1,6 +1,6 @@
 // src/App.js
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import adminRoutes from "./routes/adminRoutes";
+import adminRoutes from "./routes/routes";
 
 function App() {
   return (
