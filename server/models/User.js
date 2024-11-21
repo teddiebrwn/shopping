@@ -1,82 +1,41 @@
 const mongoose = require("mongoose");
-const bcrypt = require("bcryptjs");
-const crypto = require("crypto");
-const userMiddleware = require("../middlewares/userMiddleware");
 
-const userSchema = new mongoose.Schema({
-  username: {
-    type: String,
-    unique: true,
-    sparse: true,
-    match: [/^@[\w]+$/, "Username must start with @"],
+const userSchema = new mongoose.Schema(
+  {
+    name: { type: String, required: true },
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+      trim: true,
+      lowercase: true,
+    },
+    birthday: { type: Date, required: true },
+    username: { type: String, required: true, unique: true },
+    password: { type: String, required: true },
+    avatar: { type: String, default: "./path/to/default/avatar.png" },
+    bio: { type: String, required: false },
+    gender: {
+      type: String,
+      enum: ["male", "female", "other"],
+      default: "other",
+    },
+    address: { type: String, required: false },
+    city: { type: String, required: false },
+    country: { type: String, required: false },
+    phone: { type: String, unique: true, required: false }, // 🔴
+    role: { type: String, required: true, enum: ["admin", "manager", "user"] },
+    isActive: { type: Boolean, default: false },
+    isVerified: { type: Boolean, default: false },
+    verificationCode: { type: String, default: "" },
+    verificationExpiry: { type: Date, default: null },
+    resetPasswordToken: { type: String, default: "" },
+    resetPasswordExpiry: { type: Date, default: null },
+    lastLogin: { type: Date, default: null },
   },
-  email: {
-    type: String,
-    unique: true,
-    sparse: true,
-    match: [/.+@.+\..+/, "Please enter a valid email address"],
-  },
-  phone: {
-    type: String,
-    unique: true,
-    sparse: true,
-    match: [
-      /^\+84\d{9,10}$/,
-      "Phone number must start with +84 and be 10-11 digits",
-    ],
-  },
-  password: {
-    type: String,
-    required: [true, "Password is required"],
-    minlength: 6,
-  },
-  firstName: {
-    type: String,
-    required: true,
-  },
-  lastName: {
-    type: String,
-    required: true,
-  },
-  dateOfBirth: {
-    type: Date,
-    required: true,
-  },
-  avatar: {
-    type: String,
-  },
-  address: {
-    type: String,
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  },
-  emailVerified: {
-    type: Boolean,
-    default: false,
-  },
-  phoneVerified: {
-    type: Boolean,
-    default: false,
-  },
-  active: {
-    type: Boolean,
-    default: false,
-  },
-  verificationCode: {
-    type: String,
-  },
-  twoFactorCode: String,
-  twoFactorExpires: Date,
-});
-userSchema.pre("save", userMiddleware.updateActiveStatus);
-userSchema.pre("save", userMiddleware.hashPassword);
-userSchema.methods.matchPassword = userMiddleware.matchPassword;
-userSchema.methods.generateTwoFactorCode = userMiddleware.generateTwoFactorCode;
-userSchema.methods.verifyTwoFactorCode = userMiddleware.verifyTwoFactorCode;
-userSchema.methods.generateVerificationCode =
-  userMiddleware.generateVerificationCode;
+  { timestamps: true }
+);
 
 const User = mongoose.model("User", userSchema);
+
 module.exports = User;

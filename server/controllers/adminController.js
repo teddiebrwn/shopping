@@ -1,154 +1,110 @@
-const Admin = require("../models/Admin");
-const jwt = require("jsonwebtoken");
-const bcrypt = require("bcryptjs");
-const moment = require("moment");
-exports.registerAdmin = async (req, res) => {
+const User = require("../models/User");
+const hashPassword = require("../utils/hashPassword");
+exports.getAllUsers = async (req, res) => {
+  try {
+    const users = await User.find(
+      {},
+      "-password -resetPasswordToken -verificationCode"
+    );
+    res.status(200).json(users);
+  } catch (error) {
+    console.error("Error fetching users:", error.message);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+exports.addUser = async (req, res) => {
+  // console.log("Request body:", req.body);
   const {
-    role = "admin",
+    name,
     email,
-    phone,
+    birthday,
     username,
     password,
-    firstName,
-    lastName,
-    dateOfBirth,
+    role = "user",
+    gender = "other",
+    address,
+    city,
+    country,
   } = req.body;
-
   try {
-    const duplicateCheck = [];
-    if (email) duplicateCheck.push({ email });
-    if (phone) duplicateCheck.push({ phone });
-    if (username) duplicateCheck.push({ username });
-    if (duplicateCheck.length === 0) {
+    const existingUser = await User.findOne({
+      $or: [{ email }, { username }],
+    });
+    if (existingUser) {
       return res
-        .status(400)
-        .json({ message: "Cần ít nhất một trong email, phone hoặc username." });
+        .status(409)
+        .json({ message: "Email or username already exists" });
     }
-    const existingAdmin = await Admin.findOne({ $or: duplicateCheck });
-    if (existingAdmin) {
-      return res
-        .status(400)
-        .json({ message: "Admin -> Email, phone, hoặc username đã tồn tại." });
-    }
-    const newAdmin = new Admin({
-      role,
+    const hashedPassword = await hashPassword(password);
+    const newUser = new User({
+      name,
       email,
-      phone,
+      birthday,
       username,
-      password,
-      firstName,
-      lastName,
-      dateOfBirth,
+      password: hashedPassword,
+      role,
+      gender,
+      address,
+      city,
+      country,
     });
-    await newAdmin.save();
-
+    await newUser.save();
+    const { password: _, ...userWithoutPassword } = newUser.toObject();
     res.status(201).json({
-      message: "Tạo tài khoản thành công.",
-      user: { _id: newAdmin._id, username: newAdmin.username },
+      message: "User added successfully",
+      user: userWithoutPassword,
     });
   } catch (error) {
-    res.status(500).json({
-      message: "Đăng ký thất bại.",
-      error: error.message,
-    });
+    console.error("Error adding user:", error.message);
+    res.status(500).json({ message: "Internal server error" });
   }
 };
-exports.loginAdmin = async (req, res) => {
-  const { identifier, password } = req.body;
-  try {
-    const admin = await Admin.findOne({
-      $or: [
-        { email: identifier },
-        { phone: identifier },
-        { username: identifier },
-      ],
-    });
-    if (!admin) {
-      return res.status(404).json({ message: "Không tìm thấy tài khoản." });
-    }
-    const isMatch = await admin.matchPassword(password);
-    if (!isMatch) {
-      return res.status(401).json({ message: "Mật khẩu không chính xác." });
-    }
-    const token = jwt.sign(
-      { id: admin._id, role: admin.role },
-      process.env.JWT_SECRET,
-      { expiresIn: "1h" }
-    );
 
-    res.status(200).json({
-      message: "Đăng nhập thành công.",
-      token,
-      admin: {
-        _id: admin._id,
-        username: admin.username,
-        email: admin.email,
-        phone: admin.phone,
-      },
-    });
-  } catch (error) {
-    res.status(500).json({
-      message: "Đăng nhập thất bại.",
-      error: error.message,
-    });
-  }
-};
-exports.getAllAdmins = async (req, res) => {
+exports.updateUser = async (req, res) => {
+  const { id } = req.params;
+  const { name, email, username, role } = req.body;
   try {
-    const admins = await Admin.find();
-    const formattedAdmins = admins.map((admin) => ({
-      _id: admin._id,
-      username: admin.username,
-      email: admin.email,
-      phone: admin.phone,
-      dateOfBirth: moment(admin.dateOfBirth).format("DD-MM-YYYY"),
-      createdAt: admin.createdAt,
-    }));
-    res.status(200).json({
-      message: "Lấy danh sách Admins thành công.",
-      admins: formattedAdmins,
-    });
-  } catch (error) {
-    res.status(500).json({
-      message: "Không thể lấy danh sách Admins.",
-      error: error.message,
-    });
-  }
-};
-exports.deleteAdmin = async (req, res) => {
-  const { identifier } = req.body;
-  try {
-    const admin = await Admin.findOneAndDelete({
-      $or: [
-        { email: identifier },
-        { phone: identifier },
-        { username: identifier },
-      ],
-    });
-    if (!admin) {
-      return res.status(404).json({ message: "Không tìm thấy Admin." });
+    const updatedUser = await User.findByIdAndUpdate(
+      id,
+      { name, email, username, role },
+      { new: true, runValidators: true }
+    );
+    if (!updatedUser) {
+      return res.status(404).json({ message: "User not found" });
     }
+    const { password, resetPasswordToken, verificationCode, ...safeUser } =
+      updatedUser.toObject();
     res.status(200).json({
-      message: "Xóa Admin thành công.",
-      deletedAdmin: admin,
+      message: "User updated successfully",
+      user: safeUser,
     });
   } catch (error) {
-    res.status(500).json({
-      message: "Xóa Admin thất bại.",
-      error: error.message,
-    });
+    console.error("Error updating user:", error.message);
+    res.status(500).json({ message: "Internal server error" });
   }
 };
-exports.inactiveAdmin = async (req, res) => {
+exports.deleteUser = async (req, res) => {
+  const { id } = req.params;
   try {
-    const result = await Admin.deleteMany({ active: false });
-    res.status(200).json({
-      message: `${result.deletedCount} inactive admins đã được xóa.`,
-    });
+    const deletedUser = await User.findByIdAndDelete(id);
+    if (!deletedUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.status(200).json({ message: "User deleted successfully" });
   } catch (error) {
-    res.status(500).json({
-      message: "Xóa các inactive admin thất bại.",
-      error: error.message,
-    });
+    console.error("Error deleting user:", error.message);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+exports.deleteAllUsers = async (req, res) => {
+  try {
+    if (req.user.role !== "admin") {
+      return res.status(403).json({ message: "Access denied. Admin only." });
+    }
+    await User.deleteMany({});
+    res.status(200).json({ message: "All users deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting users:", error.message);
+    res.status(500).json({ message: "Internal server error" });
   }
 };
