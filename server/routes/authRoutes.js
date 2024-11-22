@@ -11,7 +11,7 @@ const {
   validateRegister,
   validateLogin,
   validatePasswordReset,
-} = require("../middlewares/validationMiddleware");
+} = require("../middleware/validationMiddleware");
 const User = require("../models/User");
 
 const router = express.Router();

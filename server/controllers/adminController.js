@@ -108,3 +108,22 @@ exports.deleteAllUsers = async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
+exports.getSystemLogs = async (req, res) => {
+  try {
+    // Logic lấy logs hệ thống
+    const logs = []; // Ví dụ: Fetch logs từ cơ sở dữ liệu hoặc file
+    res.status(200).json(logs);
+  } catch (error) {
+    res.status(500).json({ message: "Failed to retrieve logs" });
+  }
+};
+
+exports.getAnalytics = async (req, res) => {
+  try {
+    // Logic phân tích dữ liệu
+    const analytics = {}; // Ví dụ: Fetch analytics từ DB
+    res.status(200).json(analytics);
+  } catch (error) {
+    res.status(500).json({ message: "Failed to retrieve analytics" });
+  }
+};

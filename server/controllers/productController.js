@@ -1,6 +1,6 @@
 const Product = require("../models/product");
 const Category = require("../models/category");
-exports.getAllProducts = async (req, res) => {
+exports.getProducts = async (req, res) => {
   try {
     const products = await Product.find().populate("category");
     res.status(200).json(products);
