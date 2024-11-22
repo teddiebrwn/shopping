@@ -134,8 +134,13 @@ exports.requestPasswordReset = async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
+
 exports.resetPassword = async (req, res) => {
-  const { token, newPassword } = req.body;
+  const token = req.headers.authorization;
+  const { newPassword } = req.body;
+  if (!token) {
+    return res.status(400).json({ message: "Authorization token is required" });
+  }
   try {
     const user = await User.findOne({
       resetPasswordExpiry: { $gt: new Date() },
@@ -147,8 +152,16 @@ exports.resetPassword = async (req, res) => {
     if (!isTokenValid) {
       return res.status(400).json({ message: "Invalid or expired token" });
     }
-    user.password = await hashPassword(newPassword);
-    user.resetPasswordToken = "";
+
+    const isSamePassword = await bcrypt.compare(newPassword, user.password);
+    if (isSamePassword) {
+      return res.status(400).json({
+        message: "New password must be different from the current password",
+      });
+    }
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    user.password = hashedPassword;
+    user.resetPasswordToken = null;
     user.resetPasswordExpiry = null;
     await user.save();
     res.status(200).json({ message: "Password reset successful" });

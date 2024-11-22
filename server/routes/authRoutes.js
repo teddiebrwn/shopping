@@ -6,23 +6,28 @@ const {
   requestPasswordReset,
   resetPassword,
 } = require("../controllers/authController");
-
+const {
+  validateRegister,
+  validateLogin,
+  validatePasswordReset,
+} = require("../middlewares/validationMiddleware");
 const User = require("../models/User");
+
 const router = express.Router();
 
-router.post("/register", register);
+router.post("/register", validateRegister, register);
 router.post("/verify", verify);
-router.post("/login", login);
+router.post("/login", validateLogin, login);
 router.post("/request-password-reset", requestPasswordReset);
-router.post("/reset-password", resetPassword);
+router.post("/reset-password", validatePasswordReset, resetPassword);
 
 router.delete("/clear-users", async (req, res) => {
   try {
-    await User.deleteMany({});
-    res.status(200).json({ message: "All users deleted successfully" });
+    const result = await User.deleteMany({});
+    res.status(200).json({ message: "All users cleared", result });
   } catch (error) {
-    console.error("Error deleting users:", error);
-    res.status(500).json({ message: "Internal server error" });
+    res.status(500).json({ error: error.message });
   }
 });
+
 module.exports = router;
