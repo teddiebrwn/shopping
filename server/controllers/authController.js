@@ -53,6 +53,34 @@ exports.register = async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
+
+exports.resendVerificationCode = async (req, res) => {
+  const { emailOrUsername } = req.body;
+  try {
+    const user = await User.findOne({
+      $or: [{ email: emailOrUsername }, { username: emailOrUsername }],
+    });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    if (user.isVerified) {
+      return res.status(400).json({ message: "User already verified" });
+    }
+    const { code, expiry } = generateVerificationCode();
+    user.verificationCode = code;
+    user.verificationExpiry = expiry;
+
+    await user.save();
+
+    // Gửi email xác minh
+    await sendMail(user.email, "verification", { code });
+
+    res.status(200).json({ message: "Verification code resent successfully" });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 exports.verify = async (req, res) => {
   const { email, code } = req.body;
   try {

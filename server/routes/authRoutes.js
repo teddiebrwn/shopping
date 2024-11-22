@@ -1,6 +1,7 @@
 const express = require("express");
 const {
   register,
+  resendVerificationCode,
   verify,
   login,
   requestPasswordReset,
@@ -16,6 +17,7 @@ const User = require("../models/User");
 const router = express.Router();
 
 router.post("/register", validateRegister, register);
+router.post("/resend-verification", resendVerificationCode);
 router.post("/verify", verify);
 router.post("/login", validateLogin, login);
 router.post("/request-password-reset", requestPasswordReset);
