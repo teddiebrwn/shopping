@@ -1,146 +1,148 @@
-import React, { useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
-import axios from "axios";
-import "./Login.css";
+  import React, { useState } from "react";
+  import { useNavigate, useLocation } from "react-router-dom";
+  import axios from "axios";
+  import "./Login.css";
 
-function Login() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [forgotPasswordEmail, setForgotPasswordEmail] = useState("");
-  const [isForgotPasswordModalOpen, setForgotPasswordModalOpen] = useState(false);
-  const [error, setError] = useState("");
-  const navigate = useNavigate();
-  const location = useLocation();
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      if (!email || !password) {
-        setError("Vui lòng nhập email và mật khẩu!");
-        return;
+  function Login() {
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [showPassword, setShowPassword] = useState(false);
+    const [forgotPasswordEmail, setForgotPasswordEmail] = useState("");
+    const [isForgotPasswordModalOpen, setForgotPasswordModalOpen] = useState(false);
+    const [error, setError] = useState("");
+    const navigate = useNavigate();
+    const location = useLocation();
+    
+    const [credentials, setCredentials] = useState({
+      emailOrUsername: "",
+      password: "",
+    });
+    const handleChange = (e) => {
+      setCredentials({ ...credentials, [e.target.name]: e.target.value });
+    };
+  
+    const handleSubmit = async (e) => {
+      try {
+        const response = await API.post("/auth/login", credentials);
+        localStorage.setItem("token", response.data.token); 
+        alert("Login successful!");
+        window.location.href = "/"; 
+      } catch (err) {
+        setError(
+          err.response?.data?.message || "Login failed. Please try again."
+        );
       }
-      const response = await axios.post("http://localhost:3000/api/auth/login", {
-        email,
-        password,
-      });
-      console.log("Đăng nhập thành công:", response.data);
-      alert("Đăng nhập thành công!");
-      navigate("/");
-    } catch (error) {
-      setError(error.response?.data?.message || "Đã xảy ra lỗi khi đăng nhập!");
-    }
-  };
+    };
 
-  const openForgotPasswordModal = () => {
-    setForgotPasswordModalOpen(true);
-    setForgotPasswordEmail("");
-    setError("");
-  };
+    const openForgotPasswordModal = () => {
+      setForgotPasswordModalOpen(true);
+      setForgotPasswordEmail("");
+      setError("");
+    };
 
-  const closeForgotPasswordModal = () => {
-    setForgotPasswordModalOpen(false);
-    setError("");
-  };
+    const closeForgotPasswordModal = () => {
+      setForgotPasswordModalOpen(false);
+      setError("");
+    };
 
-  const handleForgotPasswordSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      if (!forgotPasswordEmail) {
-        setError("Vui lòng nhập email để nhận hướng dẫn đặt lại mật khẩu!");
-        return;
+    const handleForgotPasswordSubmit = async (e) => {
+      e.preventDefault();
+      try {
+        if (!forgotPasswordEmail) {
+          setError("Vui lòng nhập email để nhận hướng dẫn đặt lại mật khẩu!");
+          return;
+        }
+        await axios.post("http://localhost:3000/api/auth/request-password-reset", {
+          email: forgotPasswordEmail,
+        });
+        alert("Hướng dẫn đặt lại mật khẩu đã được gửi đến email của bạn.");
+        closeForgotPasswordModal();
+      } catch (error) {
+        setError(error.response?.data?.message || "Đã xảy ra lỗi!");
       }
-      await axios.post("http://localhost:3000/api/auth/request-password-reset", {
-        email: forgotPasswordEmail,
-      });
-      alert("Hướng dẫn đặt lại mật khẩu đã được gửi đến email của bạn.");
-      closeForgotPasswordModal();
-    } catch (error) {
-      setError(error.response?.data?.message || "Đã xảy ra lỗi!");
-    }
-  };
+    };
 
-  return (
-    <div className="login-container">
-      <div className="login-header">
-        <h2 className={location.pathname === "/login" ? "active-link" : ""} onClick={() => navigate("/login")}>Already Registered?</h2>
-        <h2 className={location.pathname === "/register" ? "active-link" : ""} onClick={() => navigate("/register")}>Create Your Account</h2>
-      </div>
-      <div className="login-box">
-        <p>If you are already registered with Nhom3, login here:</p>
-        <form onSubmit={handleSubmit}>
-          <div className="input-group">
-            <input
-              type="email"
-              id="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder=" "
-              required
-            />
-            <label htmlFor="email">Email address*</label>
-          </div>
-          <div className="input-group">
-            <input
-              type={showPassword ? "text" : "password"}
-              id="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder=" "
-              required
-            />
-            <label htmlFor="password">Password*</label>
-            <span
-              className="show-toggle"
-              onClick={() => setShowPassword(!showPassword)}
-            >
-              {showPassword ? "Hide" : "Show"}
-            </span>
-          </div>
-          {error && <p className="error-message">{error}</p>}
-          <button
-            type="button"
-            className="forgot-password"
-            onClick={openForgotPasswordModal}
-          >
-            Forgot your password?
-          </button>
-          <button type="submit" className="login-button">
-            LOGIN
-          </button>
-        </form>
-      </div>
-
-      {isForgotPasswordModalOpen && (
-        <div className="modal-overlay">
-          <div className="modal-content">
-            <button className="close-button" onClick={closeForgotPasswordModal}>
-              &times;
-            </button>
-            <h2>Forgot Your Password?</h2>
-            <p>Enter your email to reset your password.</p>
-            <form onSubmit={handleForgotPasswordSubmit}>
-              <div className="input-group">
-                <input
-                  type="email"
-                  id="forgot-password-email"
-                  value={forgotPasswordEmail}
-                  onChange={(e) => setForgotPasswordEmail(e.target.value)}
-                  placeholder=" "
-                  required
-                />
-                <label htmlFor="forgot-password-email">Email address*</label>
-              </div>
-              {error && <p className="error-message">{error}</p>}
-              <button type="submit" className="submit-button">
-                Submit Request
-              </button>
-            </form>
-          </div>
+    return (
+      <div className="login-container">
+        <div className="login-header">
+          <h2 className={location.pathname === "/login" ? "active-link" : ""} onClick={() => navigate("/login")}>Already Registered?</h2>
+          <h2 className={location.pathname === "/register" ? "active-link" : ""} onClick={() => navigate("/register")}>Create Your Account</h2>
         </div>
-      )}
-    </div>
-  );
-}
+        <div className="login-box">
+          <p>If you are already registered with Nhom3, login here:</p>
+          <form onSubmit={handleSubmit}>
+            <div className="input-group">
+              <input
+                type="email"
+                id="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder=" "
+                required
+              />
+              <label htmlFor="email">Email address*</label>
+            </div>
+            <div className="input-group">
+              <input
+                type={showPassword ? "text" : "password"}
+                id="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder=" "
+                required
+              />
+              <label htmlFor="password">Password*</label>
+              <span
+                className="show-toggle"
+                onClick={() => setShowPassword(!showPassword)}
+              >
+                {showPassword ? "Hide" : "Show"}
+              </span>
+            </div>
+            {error && <p className="error-message">{error}</p>}
+            <button
+              type="button"
+              className="forgot-password"
+              onClick={openForgotPasswordModal}
+            >
+              Forgot your password?
+            </button>
+            <button type="submit" className="login-button">
+              LOGIN
+            </button>
+          </form>
+        </div>
 
-export default Login;
+        {isForgotPasswordModalOpen && (
+          <div className="modal-overlay">
+            <div className="modal-content">
+              <button className="close-button" onClick={closeForgotPasswordModal}>
+                &times;
+              </button>
+              <h2>Forgot Your Password?</h2>
+              <p>Enter your email to reset your password.</p>
+              <form onSubmit={handleForgotPasswordSubmit}>
+                <div className="input-group">
+                  <input
+                    type="email"
+                    id="forgot-password-email"
+                    value={forgotPasswordEmail}
+                    onChange={(e) => setForgotPasswordEmail(e.target.value)}
+                    placeholder=" "
+                    required
+                  />
+                  <label htmlFor="forgot-password-email">Email address*</label>
+                </div>
+                {error && <p className="error-message">{error}</p>}
+                <button type="submit" className="submit-button">
+                  Submit Request
+                </button>
+              </form>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  export default Login;
