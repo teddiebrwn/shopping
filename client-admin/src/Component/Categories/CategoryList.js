@@ -1,18 +1,34 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import CategoryForm from "./CategoryForm";
 import { useNavigate } from "react-router-dom";
 import "./Categories.css";
 
 function CategoryList() {
-  const [categories, setCategories] = useState([
-    { id: 1, name: "Danh mục A" },
-    { id: 2, name: "Danh mục B" },
-  ]);
+  const [categories, setCategories] = useState([]);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState(null); // Trạng thái chỉnh sửa
   const [isFormOpen, setIsFormOpen] = useState(false); // Mở/đóng form
+  const [loading, setLoading] = useState(false); // Trạng thái tải dữ liệu
   const navigate = useNavigate();
+
+  // Fetch categories from API on component load
+  useEffect(() => {
+    const fetchCategories = async () => {
+      setLoading(true);
+      try {
+        const response = await fetch("http://localhost:3000/api/admin/categories");
+        const data = await response.json();
+        setCategories(data);
+      } catch (error) {
+        console.error("Lỗi khi lấy danh sách danh mục:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCategories();
+  }, []);
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -23,25 +39,79 @@ function CategoryList() {
     navigate("/login");
   };
 
-  const handleAddCategory = (newCategory) => {
-    setCategories([...categories, { ...newCategory, id: Date.now() }]);
+  const handleAddCategory = async (newCategory) => {
+    try {
+      const response = await fetch("http://localhost:3000/api/admin/category", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(newCategory),
+      });
+
+      if (!response.ok) {
+        throw new Error("Lỗi khi thêm danh mục");
+      }
+
+      const createdCategory = await response.json();
+      setCategories([...categories, createdCategory]);
+    } catch (error) {
+      console.error(error.message);
+    }
+
     setIsFormOpen(false);
   };
 
-  const handleEditCategory = (updatedCategory) => {
-    setCategories(
-      categories.map((category) =>
-        category.id === updatedCategory.id ? updatedCategory : category
-      )
-    );
+  const handleEditCategory = async (updatedCategory) => {
+    try {
+      const response = await fetch(
+        `http://localhost:3000/api/admin/category/${updatedCategory.id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(updatedCategory),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Lỗi khi cập nhật danh mục");
+      }
+
+      const updatedData = await response.json();
+      setCategories(
+        categories.map((category) =>
+          category.id === updatedData.id ? updatedData : category
+        )
+      );
+    } catch (error) {
+      console.error(error.message);
+    }
+
     setEditingCategory(null);
     setIsFormOpen(false);
   };
 
-  const handleDeleteCategory = (id) => {
-    const isConfirmed = window.confirm("Bạn có chắc chắn muốn xóa không?");
-    if (isConfirmed) {
+  const handleDeleteCategory = async (id) => {
+    const isConfirmed = window.confirm("Bạn có chắc chắn muốn xóa danh mục này?");
+    if (!isConfirmed) return;
+
+    try {
+      const response = await fetch(
+        `http://localhost:3000/api/admin/category/${id}`,
+        {
+          method: "DELETE",
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Lỗi khi xóa danh mục");
+      }
+
       setCategories(categories.filter((category) => category.id !== id));
+    } catch (error) {
+      console.error(error.message);
     }
   };
 
@@ -66,7 +136,7 @@ function CategoryList() {
                 ✖ Đóng
               </button>
               <ul className="menu-list">
-                <li onClick={() => navigate('/')}>Dashboard</li>
+                <li onClick={() => navigate("/")}>Dashboard</li>
                 <li onClick={() => navigate("/products")}>Quản lý sản phẩm</li>
                 <li onClick={() => navigate("/categories")}>Quản lý danh mục</li>
                 <li onClick={() => navigate("/users")}>Quản lý người dùng</li>
@@ -106,29 +176,35 @@ function CategoryList() {
         <button className="add-button" onClick={() => openForm()}>
           Thêm danh mục
         </button>
-        <table className="categories-table">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Tên danh mục</th>
-              <th>Hành động</th>
-            </tr>
-          </thead>
-          <tbody>
-            {categories.map((category) => (
-              <tr key={category.id}>
-                <td>{category.id}</td>
-                <td>{category.name}</td>
-                <td>
-                  <button onClick={() => openForm(category)}>Sửa</button>
-                  <button onClick={() => handleDeleteCategory(category.id)}>
-                    Xóa
-                  </button>
-                </td>
+        {loading ? (
+          <p>Đang tải...</p>
+        ) : (
+          <table className="categories-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Tên danh mục</th>
+                <th>Mô tả</th>
+                <th>Hành động</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {categories.map((category) => (
+                <tr key={category.id}>
+                  <td>{category.id}</td>
+                  <td>{category.name}</td>
+                  <td>{category.description}</td>
+                  <td>
+                    <button onClick={() => openForm(category)}>Sửa</button>
+                    <button onClick={() => handleDeleteCategory(category.id)}>
+                      Xóa
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
         {isFormOpen && (
           <CategoryForm
             category={editingCategory}
