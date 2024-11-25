@@ -1,251 +1,123 @@
 import React, { useState } from "react";
-import axios from "axios";
-import { useNavigate, useLocation } from "react-router-dom";
-import "./Register.css";
+import API from "../../api/api";
 
-
-function Register() {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
-  const [birthday, setBirthday] = useState("");
-  const [username, setUsername] = useState("");
-  const [role, setRole] = useState("");
-  const [gender, setGender] = useState("");
-  const [address, setAddress] = useState("");
-  const [city, setCity] = useState("");
-  const [country, setCountry] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [showMismatchAlert, setShowMismatchAlert] = useState(false);
-  const navigate = useNavigate();
-  const location = useLocation();
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (
-      !name ||
-      !email ||
-      !phone ||
-      !birthday ||
-      !username ||
-      !role ||
-      !gender ||
-      !address ||
-      !city ||
-      !country ||
-      !password ||
-      !confirmPassword
-    ) {
-      alert("Vui lòng nhập đầy đủ thông tin!");
-    } else if (password !== confirmPassword) {
-      setShowMismatchAlert(true);
-    } else {
-      try {
-        const response = await axios.post("http://localhost:3000/api/auth/register", {
-          name,
-          email,
-          phone,
-          birthday,
-          username,
-          role,
-          gender,
-          address,
-          city,
-          country,
-          password,
-        });
-        console.log("Đăng ký thành công:", response.data);
-        alert("Đăng ký thành công! Vui lòng kiểm tra email để xác thực tài khoản.");
-        navigate("/login");
-      } catch (error) {
-        console.error("Lỗi khi đăng ký:", error);
-        alert("Đăng ký thất bại. Vui lòng thử lại!");
-      }
+const Register = () => {
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    birthday: "",
+    username: "",
+    password: "",
+    gender: "",
+    address: "",
+    city: "",
+    country: "",
+  });
+  const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+  const handleRegister = async () => {
+    try {
+      const payload = { ...formData, role: "user" };
+      const response = await API.post("/auth/register", payload);
+      setMessage(
+        response.data.message ||
+          "Registration successful! Please verify your account."
+      );
+      setError("");
+      localStorage.setItem(
+        "emailOrUsername",
+        formData.email || formData.username
+      );
+      setTimeout(() => {
+        window.location.href = "/verify";
+      }, 2000);
+    } catch (err) {
+      setError(
+        err.response?.data?.message || "Registration failed. Please try again."
+      );
+      setMessage("");
     }
   };
-
   return (
-    <div className="register-container">
-      <div className="register-header">
-        <h2
-          className={location.pathname === "/login" ? "active-link" : ""}
-          onClick={() => navigate("/login")}
-        >
-          Already Registered?
-        </h2>
-        <h2
-          className={location.pathname === "/register" ? "active-link" : ""}
-          onClick={() => navigate("/register")}
-        >
-          Create Your Account
-        </h2>
-      </div>
-      <div className="register-box">
-        <form onSubmit={handleSubmit}>
-          <div className="input-group">
-            <input
-              type="text"
-              id="name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder=" "
-              required
-            />
-            <label htmlFor="name">Name*</label>
-          </div>
-          <div className="input-group">
-            <input
-              type="email"
-              id="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder=" "
-              required
-            />
-            <label htmlFor="email">Email address*</label>
-          </div>
-          <div className="input-group">
-            <input
-              type="tel"
-              id="phone"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              placeholder=" "
-              required
-            />
-            <label htmlFor="phone">Phone*</label>
-          </div>
-          <div className="input-group">
-            <input
-              type="text"
-              id="birthday"
-              onFocus={(e) => (e.target.type = "date")}
-              onBlur={(e) => (e.target.type = "text")}
-              value={birthday}
-              onChange={(e) => setBirthday(e.target.value)}
-              placeholder=" "
-              required
-            />
-            <label htmlFor="birthday">Birthday*</label>
-          </div>
-          <div className="input-group">
-            <input
-              type="text"
-              id="username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              placeholder=" "
-              required
-            />
-            <label htmlFor="username">Username*</label>
-          </div>
-          <div className={`input-group ${role ? "active" : ""}`}>
-            <select
-              id="role"
-              value={role}
-              onChange={(e) => setRole(e.target.value)}
-              required
-            >
-              <option value="" disabled hidden></option>
-              <option value="admin">Admin</option>
-              <option value="user">User</option>
-            </select>
-            <label htmlFor="role">Role*</label>
-          </div>
-          <div className="gender-group">
-            <label>
-              <input
-                type="radio"
-                name="gender"
-                value="male"
-                onChange={(e) => setGender(e.target.value)}
-              />
-              <span>Male</span>
-            </label>
-            <label>
-              <input
-                type="radio"
-                name="gender"
-                value="female"
-                onChange={(e) => setGender(e.target.value)}
-              />
-              <span>Female</span>
-            </label>
-          </div>
-          <div className="input-group">
-            <input
-              type="text"
-              id="address"
-              value={address}
-              onChange={(e) => setAddress(e.target.value)}
-              placeholder=" "
-              required
-            />
-            <label htmlFor="address">Address*</label>
-          </div>
-          <div className="input-group">
-            <input
-              type="text"
-              id="city"
-              value={city}
-              onChange={(e) => setCity(e.target.value)}
-              placeholder=" "
-              required
-            />
-            <label htmlFor="city">City*</label>
-          </div>
-          <div className="input-group">
-            <input
-              type="text"
-              id="country"
-              value={country}
-              onChange={(e) => setCountry(e.target.value)}
-              placeholder=" "
-              required
-            />
-            <label htmlFor="country">Country*</label>
-          </div>
-          <div className="input-group">
-            <input
-              type="password"
-              id="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder=" "
-              required
-            />
-            <label htmlFor="password">Password*</label>
-          </div>
-          <div className="input-group">
-            <input
-              type="password"
-              id="confirmPassword"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              placeholder=" "
-              required
-            />
-            <label htmlFor="confirmPassword">Confirm Password*</label>
-          </div>
-          <button type="submit" className="register-button">
-            REGISTER
-          </button>
-        </form>
-      </div>
-      {showMismatchAlert && (
-        <div className="alert-overlay">
-          <div className="alert-box">
-            <h2>Thông báo</h2>
-            <p>Mật khẩu không trùng khớp</p>
-            <button className="alert-button" onClick={() => setShowMismatchAlert(false)}>
-              OK
-            </button>
-          </div>
-        </div>
-      )}
+    <div>
+      <h2>Register</h2>
+      {error && <p style={{ color: "red" }}>{error}</p>}
+      {message && <p style={{ color: "green" }}>{message}</p>}{" "}
+      <form>
+        <input
+          type="text"
+          name="name"
+          placeholder="Name"
+          value={formData.name}
+          onChange={handleChange}
+        />
+        <input
+          type="email"
+          name="email"
+          placeholder="Email"
+          value={formData.email}
+          onChange={handleChange}
+        />
+        <input
+          type="date"
+          name="birthday"
+          placeholder="Birthday"
+          value={formData.birthday}
+          onChange={handleChange}
+        />
+        <input
+          type="text"
+          name="username"
+          placeholder="Username"
+          value={formData.username}
+          onChange={handleChange}
+        />
+        <input
+          type="password"
+          name="password"
+          placeholder="Password"
+          value={formData.password}
+          onChange={handleChange}
+        />
+        <select name="gender" value={formData.gender} onChange={handleChange}>
+          <option value="">Select Gender</option>
+          <option value="male">Male</option>
+          <option value="female">Female</option>
+          <option value="other">Other</option>
+        </select>
+        <input
+          type="text"
+          name="address"
+          placeholder="Address"
+          value={formData.address}
+          onChange={handleChange}
+        />
+        <input
+          type="text"
+          name="city"
+          placeholder="City"
+          value={formData.city}
+          onChange={handleChange}
+        />
+        <input
+          type="text"
+          name="country"
+          placeholder="Country"
+          value={formData.country}
+          onChange={handleChange}
+        />
+        <button type="button" onClick={handleRegister}>
+          Register
+        </button>
+      </form>
+      <p>
+        Already have an account? <a href="/login">Login here</a>
+      </p>
     </div>
   );
-}
+};
 
 export default Register;

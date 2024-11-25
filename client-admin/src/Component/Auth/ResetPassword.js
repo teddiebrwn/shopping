@@ -1,119 +1,67 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import axios from "axios";
-import "./ResetPassword.css";
+import { useParams, useNavigate } from "react-router-dom";
+import API from "../../api/api";
 
-function ResetPassword() {
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [showNewPassword, setShowNewPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [error, setError] = useState("");
-  const [successMessage, setSuccessMessage] = useState("");
+const ResetPassword = () => {
+  const { token } = useParams();
   const navigate = useNavigate();
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmNewPassword, setConfirmNewPassword] = useState("");
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    if (newPassword !== confirmPassword) {
+    if (newPassword !== confirmNewPassword) {
       setError("Passwords do not match");
       return;
     }
-
     try {
-      const response = await axios.post("http://localhost:3000/api/auth/reset-password", {
-        newPassword,
-        confirmNewPassword: confirmPassword,
-      });
-      console.log("Password reset successful:", response.data);
-      setSuccessMessage("Password has been reset successfully!");
-      setTimeout(() => navigate("/login"), 2000); 
-    } catch (error) {
-      setError(error.response?.data?.message || "An error occurred while resetting password.");
-    }
-  };
-
-  const handleCancel = () => {
-    navigate("/login");
-  };
-
-  const handleConfirmPasswordChange = (value) => {
-    setConfirmPassword(value);
-    if (newPassword !== value) {
-      setError("Passwords do not match");
-    } else {
+      await API.post(
+        "/auth/reset-password",
+        { newPassword, confirmNewPassword },
+        {
+          headers: {
+            Authorization: token,
+          },
+        }
+      );
+      setSuccess("Password reset successful!");
       setError("");
+      setTimeout(() => navigate("/login"), 2000);
+    } catch (err) {
+      setError(err.response?.data?.message || "Error resetting password");
+      setSuccess("");
     }
   };
-
   return (
-    <div className="reset-password-container">
-      <h2 className="reset-password-header">RESET PASSWORD</h2>
-      <div className="password-requirements">
-        <p>Password requirements</p>
-        <ul>
-          <li>No repetition of more than two characters</li>
-          <li>One number</li>
-          <li>At least 1 allowed special character(s) from ~!@#$%^&*-_/+=`</li>
-          <li>One lowercase character</li>
-          <li>One uppercase character</li>
-          <li>8 characters minimum</li>
-        </ul>
-      </div>
+    <div>
+      <h2>Reset Your Password</h2>
+      {error && <p style={{ color: "red" }}>{error}</p>}
+      {success && <p style={{ color: "green" }}>{success}</p>}
       <form onSubmit={handleSubmit}>
-        <div className="input-group">
+        <div>
+          <label>New Password</label>
           <input
-            type={showNewPassword ? "text" : "password"}
-            id="new-password"
-            placeholder=" "
+            type="password"
             value={newPassword}
             onChange={(e) => setNewPassword(e.target.value)}
             required
           />
-          <label htmlFor="new-password">New Password*</label>
-          <span
-            className="show-toggle"
-            onClick={() => setShowNewPassword(!showNewPassword)}
-          >
-            {showNewPassword ? "Hide" : "Show"}
-          </span>
         </div>
-        <div className="input-group">
+        <div>
+          <label>Confirm New Password</label>
           <input
-            type={showConfirmPassword ? "text" : "password"}
-            id="confirm-password"
-            placeholder=" "
-            value={confirmPassword}
-            onChange={(e) => handleConfirmPasswordChange(e.target.value)}
+            type="password"
+            value={confirmNewPassword}
+            onChange={(e) => setConfirmNewPassword(e.target.value)}
             required
           />
-          <label htmlFor="confirm-password">Confirm New Password*</label>
-          <span
-            className="show-toggle"
-            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-          >
-            {showConfirmPassword ? "Hide" : "Show"}
-          </span>
-          {error && <p className="error-message">{error}</p>}
         </div>
-        <div className="button-group">
-          <button
-            type="button"
-            className="cancel-button"
-            onClick={handleCancel}
-          >
-            CANCEL
-          </button>
-          <button type="submit" className="save-button">
-            SAVE
-          </button>
-        </div>
-        {successMessage && (
-          <p className="success-message">{successMessage}</p>
-        )}
+        <button type="submit">Reset Password</button>
       </form>
     </div>
   );
-}
+};
 
 export default ResetPassword;
