@@ -1,6 +1,7 @@
+const mongoose = require("mongoose");
 const Product = require("../models/product");
 const Category = require("../models/category");
-exports.getAllProducts = async (req, res) => {
+exports.getProducts = async (req, res) => {
   try {
     const products = await Product.find().populate("category");
     res.status(200).json(products);
@@ -80,5 +81,68 @@ exports.deleteProduct = async (req, res) => {
     res.status(204).send();
   } catch (error) {
     res.status(500).json({ message: "Server error", error });
+  }
+};
+exports.getFilteredProducts = async (req, res) => {
+  try {
+    const {
+      search,
+      category,
+      minPrice,
+      maxPrice,
+      inStock,
+      sortBy = "price",
+      order = "asc",
+      page = 1,
+      limit = 10,
+    } = req.query;
+    let query = {};
+    if (search) {
+      query.$or = [
+        { name: { $regex: search, $options: "i" } },
+        { description: { $regex: search, $options: "i" } },
+      ];
+    }
+    if (category) {
+      const categoryDoc = await Category.findOne({
+        $or: [
+          { name: category },
+          { _id: mongoose.Types.ObjectId.isValid(category) ? category : null },
+        ],
+      });
+      if (categoryDoc) {
+        query.category = categoryDoc._id;
+      } else {
+        return res.status(404).json({ message: "Category not found" });
+      }
+    }
+    if (minPrice || maxPrice) {
+      query.price = {};
+      if (minPrice) query.price.$gte = parseFloat(minPrice);
+      if (maxPrice) query.price.$lte = parseFloat(maxPrice);
+    }
+    if (inStock) {
+      query.stock = inStock === "true" ? { $gt: 0 } : { $lte: 0 };
+    }
+    const sortOptions = {};
+    sortOptions[sortBy] = order === "asc" ? 1 : -1;
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+    const products = await Product.find(query)
+      .sort(sortOptions)
+      .skip(skip)
+      .limit(parseInt(limit))
+      .populate("category", "name");
+    const total = await Product.countDocuments(query);
+    res.status(200).json({
+      message: "Products retrieved successfully",
+      count: products.length,
+      total,
+      page: parseInt(page),
+      pages: Math.ceil(total / limit),
+      products,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Failed to retrieve products", error });
   }
 };

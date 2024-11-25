@@ -1,0 +1,38 @@
+/* Dashboard Section */
+.dashboard {
+  padding: 20px;
+  background-color: #f4f4f4;
+  min-height: calc(100vh - 70px); /* Adjust based on header height */
+}
+
+.dashboard h1 {
+  font-size: 24px;
+  margin-bottom: 20px;
+  font-weight: bold;
+}
+
+.dashboard-widgets {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+}
+
+.widget {
+  background: white;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+
+.widget h3 {
+  font-size: 18px;
+  color: #333;
+  margin-bottom: 10px;
+}
+
+.widget p {
+  font-size: 20px;
+  font-weight: bold;
+  color: #3498db;
+}
