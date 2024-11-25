@@ -7,15 +7,17 @@ function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [forgotPasswordEmail, setForgotPasswordEmail] = useState("");
+  const [isForgotPasswordModalOpen, setForgotPasswordModalOpen] = useState(false);
+  const [error, setError] = useState("");
   const navigate = useNavigate();
   const location = useLocation();
-  const [error, setError] = useState(""); // Lưu lỗi từ server
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       if (!email || !password) {
-        alert("Vui lòng nhập email và mật khẩu!");
+        setError("Vui lòng nhập email và mật khẩu!");
         return;
       }
       const response = await axios.post("http://localhost:3000/api/auth/login", {
@@ -24,22 +26,35 @@ function Login() {
       });
       console.log("Đăng nhập thành công:", response.data);
       alert("Đăng nhập thành công!");
-      navigate("/dashboard"); // Điều hướng đến dashboard hoặc trang khác sau khi đăng nhập thành công
+      navigate("/");
     } catch (error) {
       setError(error.response?.data?.message || "Đã xảy ra lỗi khi đăng nhập!");
     }
   };
 
-  const handleForgotPassword = async () => {
+  const openForgotPasswordModal = () => {
+    setForgotPasswordModalOpen(true);
+    setForgotPasswordEmail("");
+    setError("");
+  };
+
+  const closeForgotPasswordModal = () => {
+    setForgotPasswordModalOpen(false);
+    setError("");
+  };
+
+  const handleForgotPasswordSubmit = async (e) => {
+    e.preventDefault();
     try {
-      if (!email) {
-        alert("Vui lòng nhập email để nhận hướng dẫn đặt lại mật khẩu!");
+      if (!forgotPasswordEmail) {
+        setError("Vui lòng nhập email để nhận hướng dẫn đặt lại mật khẩu!");
         return;
       }
       await axios.post("http://localhost:3000/api/auth/request-password-reset", {
-        email,
+        email: forgotPasswordEmail,
       });
       alert("Hướng dẫn đặt lại mật khẩu đã được gửi đến email của bạn.");
+      closeForgotPasswordModal();
     } catch (error) {
       setError(error.response?.data?.message || "Đã xảy ra lỗi!");
     }
@@ -48,18 +63,8 @@ function Login() {
   return (
     <div className="login-container">
       <div className="login-header">
-        <h2
-          className={location.pathname === "/login" ? "active-link" : ""}
-          onClick={() => navigate("/login")}
-        >
-          Already Registered?
-        </h2>
-        <h2
-          className={location.pathname === "/register" ? "active-link" : ""}
-          onClick={() => navigate("/register")}
-        >
-          Create Your Account
-        </h2>
+        <h2 className={location.pathname === "/login" ? "active-link" : ""} onClick={() => navigate("/login")}>Already Registered?</h2>
+        <h2 className={location.pathname === "/register" ? "active-link" : ""} onClick={() => navigate("/register")}>Create Your Account</h2>
       </div>
       <div className="login-box">
         <p>If you are already registered with Nhom3, login here:</p>
@@ -92,15 +97,48 @@ function Login() {
               {showPassword ? "Hide" : "Show"}
             </span>
           </div>
-          <button type="button" className="forgot-password" onClick={handleForgotPassword}>
+          {error && <p className="error-message">{error}</p>}
+          <button
+            type="button"
+            className="forgot-password"
+            onClick={openForgotPasswordModal}
+          >
             Forgot your password?
           </button>
-          {error && <p className="error-message">{error}</p>}
           <button type="submit" className="login-button">
             LOGIN
           </button>
         </form>
       </div>
+
+      {isForgotPasswordModalOpen && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <button className="close-button" onClick={closeForgotPasswordModal}>
+              &times;
+            </button>
+            <h2>Forgot Your Password?</h2>
+            <p>Enter your email to reset your password.</p>
+            <form onSubmit={handleForgotPasswordSubmit}>
+              <div className="input-group">
+                <input
+                  type="email"
+                  id="forgot-password-email"
+                  value={forgotPasswordEmail}
+                  onChange={(e) => setForgotPasswordEmail(e.target.value)}
+                  placeholder=" "
+                  required
+                />
+                <label htmlFor="forgot-password-email">Email address*</label>
+              </div>
+              {error && <p className="error-message">{error}</p>}
+              <button type="submit" className="submit-button">
+                Submit Request
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
