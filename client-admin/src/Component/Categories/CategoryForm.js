@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from "react";
-import "./Categories.css";
 
 function CategoryForm({ category, onSave, onCancel }) {
-  const [formData, setFormData] = useState({ name: "" });
+  const [formData, setFormData] = useState({
+    name: "",
+    description: "",
+  });
 
   useEffect(() => {
     if (category) {
       setFormData(category);
     } else {
-      setFormData({ name: "" });
+      setFormData({ name: "", description: "" });
     }
   }, [category]);
 
@@ -19,9 +21,7 @@ function CategoryForm({ category, onSave, onCancel }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (formData.name) {
-      onSave(formData);
-    }
+    onSave({ ...formData });
   };
 
   return (
@@ -34,6 +34,15 @@ function CategoryForm({ category, onSave, onCancel }) {
             type="text"
             name="name"
             value={formData.name}
+            onChange={handleChange}
+            required
+          />
+        </label>
+        <label>
+          Mô tả:
+          <textarea
+            name="description"
+            value={formData.description}
             onChange={handleChange}
             required
           />
