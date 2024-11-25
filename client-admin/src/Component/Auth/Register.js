@@ -3,6 +3,7 @@ import axios from "axios";
 import { useNavigate, useLocation } from "react-router-dom";
 import "./Register.css";
 
+
 function Register() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
