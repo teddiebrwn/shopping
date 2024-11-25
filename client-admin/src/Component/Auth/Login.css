@@ -1,0 +1,140 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f8f8f8;
+    margin: 0;
+    padding: 0;
+  }
+  
+  .login-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    padding: 20px;
+  }
+  
+  .login-header {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    max-width: 600px;
+    margin-bottom: 30px;
+  }
+  
+  .login-header h2 {
+    font-size: 22px;
+    font-weight: bold;
+    text-align: center;
+    flex: 1;
+  }
+  
+  .login-box {
+    background-color: #f2f2f2;
+    padding: 40px;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 600px;
+    text-align: center;
+  }
+  
+  .login-box p {
+    font-size: 16px;
+    margin-bottom: 30px;
+    color: #666;
+  }
+  
+  .input-group {
+    position: relative;
+    margin-bottom: 30px;
+  }
+  
+  .input-group input {
+    width: 100%;
+    border: none;
+    border-bottom: 2px solid #ccc;
+    padding: 10px 0;
+    font-size: 18px;
+    outline: none;
+    background: none;
+  }
+  
+  .input-group input:focus {
+    border-bottom-color: #000;
+  }
+  
+  .input-group label {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    font-size: 18px;
+    color: #aaa;
+    transform: translateY(-50%);
+    transition: 0.2s ease all;
+    pointer-events: none;
+  }
+  
+  .input-group input:focus + label,
+  .input-group input:not(:placeholder-shown) + label {
+    top: -10px;
+    font-size: 14px;
+    color: #333;
+  }
+  
+  .show-toggle {
+    position: absolute;
+    top: 50%;
+    right: 0;
+    transform: translateY(-50%);
+    cursor: pointer;
+    font-size: 16px;
+    color: #666;
+  }
+  
+  .login-button {
+    width: 100%;
+    background-color: black;
+    color: white;
+    border: none;
+    padding: 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 18px;
+  }
+  
+  .login-button:hover {
+    background-color: #333;
+  }
+  
+  .forgot-password {
+    display: block;
+    margin-bottom: 15px;
+    font-size: 14px;
+    color: #007bff;
+    text-decoration: none;
+  }
+  
+  .forgot-password:hover {
+    text-decoration: underline;
+  }
+
+  .login-header h2 {
+    font-weight: normal; 
+    cursor: pointer; 
+    margin: 0 15px; 
+    transition: font-weight 0.2s ease; 
+  }
+  
+  .login-header h2.active-link {
+    font-weight: bold; 
+  }
+  .error-message {
+    color: red;
+    font-size: 14px;
+    margin-top: 10px;
+  }
+  
+  
+  
+  
