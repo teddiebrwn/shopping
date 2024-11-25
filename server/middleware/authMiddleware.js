@@ -15,7 +15,6 @@ exports.authenticate = (req, res, next) => {
     return res.status(403).json({ message: "Access denied. Invalid token." });
   }
 };
-
 exports.isAdmin = (req, res, next) => {
   console.log("User in isAdmin:", req.user);
   if (!req.user || req.user.role !== "admin") {

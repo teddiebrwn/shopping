@@ -3,49 +3,48 @@ const {
   createCategory,
   updateCategory,
   deleteCategory,
-  getCategories, // Lấy danh mục
+  getCategories,
 } = require("../controllers/categoryController");
 
 const {
   createProduct,
   updateProduct,
   deleteProduct,
-  getProducts, // Lấy sản phẩm
+  getProducts,
 } = require("../controllers/productController");
 
 const {
   getAllUsers,
   updateUser,
   deleteUser,
-  getSystemLogs, // Xem logs hệ thống
-  getAnalytics, // Xem thống kê
+  getSystemLogs,
+  getAnalytics,
 } = require("../controllers/adminController");
 
 const checkRole = require("../middleware/checkRole");
 
 const router = express.Router();
 
-// Middleware kiểm tra quyền admin
 router.use(checkRole("admin"));
 
-// Routes liên quan đến danh mục
-router.get("/categories", getCategories); // Lấy tất cả danh mục
-router.post("/category", createCategory); // Tạo danh mục
-router.put("/category/:id", updateCategory); // Cập nhật danh mục
-router.delete("/category/:id", deleteCategory); // Xóa danh mục
+//categories
+router.get("/categories", getCategories);
+router.post("/category", createCategory);
+router.put("/category/:id", updateCategory);
+router.delete("/category/:id", deleteCategory);
 
-// Routes liên quan đến sản phẩm
-router.get("/products", getProducts); // Lấy tất cả sản phẩm
-router.post("/product", createProduct); // Tạo sản phẩm
-router.put("/product/:id", updateProduct); // Cập nhật sản phẩm
-router.delete("/product/:id", deleteProduct); // Xóa sản phẩm
+//products
+router.get("/products", getProducts);
+router.post("/product", createProduct);
+router.put("/product/:id", updateProduct);
+router.delete("/product/:id", deleteProduct);
 
-// Routes liên quan đến người dùng
-router.get("/users", getAllUsers); // Lấy danh sách người dùng
-router.put("/user/:id", updateUser); // Cập nhật người dùng
-router.delete("/user/:id", deleteUser); // Xóa người dùng
-// Routes quản trị khác
-router.get("/logs", getSystemLogs); // Xem logs hệ thống
-router.get("/analytics", getAnalytics); // Xem thống kê
+//user
+router.get("/users", getAllUsers);
+router.put("/user/:id", updateUser);
+router.delete("/user/:id", deleteUser);
+// permission other
+router.get("/logs", getSystemLogs);
+router.get("/analytics", getAnalytics);
 
 module.exports = router;

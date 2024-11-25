@@ -1,28 +1,22 @@
 const express = require("express");
-const {
-  getCategories, // Lấy danh mục
-} = require("../controllers/categoryController");
+const { getCategories } = require("../controllers/categoryController");
+
+const { getProducts } = require("../controllers/productController");
 
 const {
-  getProducts, // Lấy sản phẩm
-} = require("../controllers/productController");
-
-const {
-  getUserProfile, // Lấy thông tin cá nhân
-  updateUserProfile, // Cập nhật thông tin cá nhân
+  getUserProfile,
+  updateUserProfile,
 } = require("../controllers/userController");
 
 const checkRole = require("../middleware/checkRole");
 
 const router = express.Router();
 
-// Middleware kiểm tra quyền user
 router.use(checkRole("user"));
 
-// Routes
-router.get("/profile", getUserProfile); // Lấy thông tin cá nhân
-router.put("/profile", updateUserProfile); // Cập nhật thông tin cá nhân
-router.get("/categories", getCategories); // Lấy tất cả danh mục
-router.get("/products", getProducts); // Lấy tất cả sản phẩm
+router.get("/profile", getUserProfile);
+router.put("/profile", updateUserProfile);
+router.get("/categories", getCategories);
+router.get("/products", getProducts);
 
 module.exports = router;

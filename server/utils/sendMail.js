@@ -1,26 +1,18 @@
 const nodemailer = require("nodemailer");
 require("dotenv").config();
 
-/**
- * Function to send emails based on the type (e.g., verification, password reset).
- * @param {string} to - Recipient email address.
- * @param {string} type - Type of email (e.g., "verification", "passwordReset").
- * @param {Object} data - Data to populate the email (e.g., verification code, reset link).
- */
 const sendMail = async (to, type, data) => {
   try {
-    // Create transporter for Gmail
     const transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
-        user: process.env.EMAIL_USER, // Email sender
-        pass: process.env.EMAIL_PASS, // Email password
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
       },
     });
 
     let subject, htmlContent;
 
-    // Email content based on the type
     if (type === "verification") {
       subject = "Your Verification Code";
       htmlContent = `
@@ -47,13 +39,11 @@ const sendMail = async (to, type, data) => {
     } else {
       throw new Error("Invalid email type provided");
     }
-
-    // Send the email
     await transporter.sendMail({
-      from: process.env.EMAIL_USER, // Sender address
-      to, // Recipient address
-      subject, // Subject line
-      html: htmlContent, // HTML body content
+      from: process.env.EMAIL_USER,
+      to,
+      subject,
+      html: htmlContent,
     });
 
     console.log(`Email sent successfully to ${to}`);
