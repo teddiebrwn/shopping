@@ -12,16 +12,16 @@ import OrderList from '../Component/Orders/OrderList';
 import Verify from "../Component/Auth/Verify";
 
 const routes = [
-  { path: '/', element: <Navigate to="/login" /> },
-  { path: '/login', element: <Login /> },
-  { path: '/register', element: <Register /> },
-  { path: '/verify', element: <Verify />},
-  { path: '/resetpassword', element: <ResetPassword /> },
-  { path: '/home', element: <Home />},
-  { path: '/products', element: <ProductList /> },
-  { path: '/categories', element: <CategoryList /> },
-  { path: '/users', element: <UserList /> },
-  { path: '/orders', element: <OrderList /> },
+  { path: '/', element: <Navigate to="/admin/login" /> },
+  { path: '/admin/login', element: <Login /> },
+  { path: '/admin/register', element: <Register /> },
+  { path: '/admin/verify', element: <Verify />},
+  { path: '/admin/resetpassword', element: <ResetPassword /> },
+  { path: '/admin/home', element: <Home />},
+  { path: '/admin/products', element: <ProductList /> },
+  { path: '/admin/categories', element: <CategoryList /> },
+  { path: '/admin/users', element: <UserList /> },
+  { path: '/admin/orders', element: <OrderList /> },
 ];
 
 export default routes;
