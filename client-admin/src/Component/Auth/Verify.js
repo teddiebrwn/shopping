@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import API from "../../api/api";
+import "./Verify.css";
 
 const Verify = () => {
   const [emailOrUsername, setEmailOrUsername] = useState("");
@@ -40,13 +41,13 @@ const Verify = () => {
   };
 
   return (
-    <div>
+    <div className="verify-container">
       <h2>Verify Your Account</h2>
       <p>Please enter the 6-digit verification code sent to your email.</p>
-      {error && <p style={{ color: "red" }}>{error}</p>}{" "}
-      {message && <p style={{ color: "green" }}>{message}</p>}{" "}
+      {error && <p className="error-message">{error}</p>}
+      {message && <p className="success-message">{message}</p>}
       <p>
-        Email/Username: <strong>{emailOrUsername}</strong>{" "}
+        Email/Username: <strong>{emailOrUsername}</strong>
       </p>
       <input
         type="text"
