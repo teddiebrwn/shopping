@@ -17,7 +17,6 @@ const Register = () => {
         email: "",
         birthday: "",
         password: "",
-        confirmPassword: "",
         address: "",
         city: "",
         country: "",
@@ -232,22 +231,6 @@ const Register = () => {
                             icon={showPassword ? faEyeSlashRegular : faEye}
                             className="password-icon"
                             onClick={() => setShowPassword((prev) => !prev)}
-                        />
-                    </div>
-
-                    <div className="input-group">
-                        <input
-                            type={showConfirmPassword ? "text" : "password"}
-                            name="confirmPassword"
-                            placeholder=" "
-                            value={formData.confirmPassword}
-                            onChange={handleChange}
-                        />
-                        <label>Confirm Password *</label>
-                        <FontAwesomeIcon
-                            icon={showConfirmPassword ? faEyeSlashRegular : faEye}
-                            className="password-icon"
-                            onClick={() => setShowConfirmPassword((prev) => !prev)}
                         />
                     </div>
 
