@@ -1,10 +1,19 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import './Home.css';
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {faBars,faBoxOpen,faList,faUsers,faShoppingCart} from "@fortawesome/free-solid-svg-icons";
+import API from "../../api/api"; // Import file API
+import "./Home.css";
 
 function Home() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [dashboardData, setDashboardData] = useState({
+    totalProducts: 0,
+    totalCategories: 0,
+    totalUsers: 0,
+    processingOrders: 0,
+  });
   const navigate = useNavigate();
 
   const toggleMenu = () => {
@@ -12,9 +21,34 @@ function Home() {
   };
 
   const handleLogout = () => {
-    console.log('Đăng xuất thành công');
-    navigate('/login');
+    console.log("Đăng xuất thành công");
+    navigate("/login");
   };
+
+  // Fetch data from API
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        const [productsRes, categoriesRes, usersRes, ordersRes] = await Promise.all([
+          API.get("/admin/products"), // Get total products
+          API.get("/admin/categories"), // Get total categories
+          API.get("/admin/users"), // Get total users
+          API.get("/cart"), // Get processing orders
+        ]);
+
+        setDashboardData({
+          totalProducts: productsRes.data.length, // Assuming the API returns an array of products
+          totalCategories: categoriesRes.data.length, // Assuming the API returns an array of categories
+          totalUsers: usersRes.data.length, // Assuming the API returns an array of users
+          processingOrders: ordersRes.data.length, // Assuming the API returns an array of orders
+        });
+      } catch (error) {
+        console.error("Error fetching dashboard data:", error);
+      }
+    };
+
+    fetchDashboardData();
+  }, []);
 
   return (
     <div className="home-container">
@@ -23,20 +57,20 @@ function Home() {
         <div className="left-section">
           {!isMenuOpen && (
             <div className="menu-button" onClick={toggleMenu}>
-              <span>☰</span> Menu
+              <FontAwesomeIcon icon={faBars} /> Menu
             </div>
           )}
           {isMenuOpen && (
-            <div className={`menu-container ${isMenuOpen ? 'open' : ''}`}>
+            <div className={`menu-container ${isMenuOpen ? "open" : ""}`}>
               <button className="close-button" onClick={toggleMenu}>
-                ✖ Đóng
+                <FontAwesomeIcon icon={faBars} />
               </button>
               <ul className="menu-list">
-                <li onClick={() => navigate('/')}>Dashboard</li>
-                <li onClick={() => navigate('/products')}>Quản lý sản phẩm</li>
-                <li onClick={() => navigate('/categories')}>Quản lý mục lục</li>
-                <li onClick={() => navigate('/users')}>Quản lý người dùng</li>
-                <li onClick={() => navigate('/orders')}>Quản lý đơn hàng</li>
+                <li onClick={() => navigate("/home")}>Dashboard</li>
+                <li onClick={() => navigate("/products")}>Quản lý sản phẩm</li>
+                <li onClick={() => navigate("/categories")}>Quản lý mục lục</li>
+                <li onClick={() => navigate("/users")}>Quản lý người dùng</li>
+                <li onClick={() => navigate("/orders")}>Quản lý đơn hàng</li>
               </ul>
             </div>
           )}
@@ -56,7 +90,7 @@ function Home() {
             <div className="user-dropdown">
               <button
                 className="dropdown-button"
-                onClick={() => navigate('/users')}
+                onClick={() => navigate("/users")}
               >
                 Chỉnh sửa người dùng
               </button>
@@ -73,20 +107,24 @@ function Home() {
         <h1>Dashboard</h1>
         <div className="dashboard-widgets">
           <div className="widget">
+            <FontAwesomeIcon icon={faBoxOpen} className="widget-icon" />
             <h3>Tổng sản phẩm</h3>
-            <p>100</p>
+            <p>{dashboardData.totalProducts}</p>
           </div>
           <div className="widget">
+            <FontAwesomeIcon icon={faList} className="widget-icon" />
             <h3>Tổng danh mục</h3>
-            <p>20</p>
+            <p>{dashboardData.totalCategories}</p>
           </div>
           <div className="widget">
+            <FontAwesomeIcon icon={faUsers} className="widget-icon" />
             <h3>Tổng người dùng</h3>
-            <p>50</p>
+            <p>{dashboardData.totalUsers}</p>
           </div>
           <div className="widget">
+            <FontAwesomeIcon icon={faShoppingCart} className="widget-icon" />
             <h3>Đơn hàng đang xử lý</h3>
-            <p>15</p>
+            <p>{dashboardData.processingOrders}</p>
           </div>
         </div>
       </main>
