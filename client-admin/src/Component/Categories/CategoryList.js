@@ -1,27 +1,29 @@
 import React, { useState, useEffect } from "react";
 import CategoryForm from "./CategoryForm";
 import { useNavigate } from "react-router-dom";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faEdit, faTrash, faPlus, faBars } from "@fortawesome/free-solid-svg-icons";
 import "./Categories.css";
+import API from "../../api/api";
 
 function CategoryList() {
   const [categories, setCategories] = useState([]);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [editingCategory, setEditingCategory] = useState(null); // Trạng thái chỉnh sửa
-  const [isFormOpen, setIsFormOpen] = useState(false); // Mở/đóng form
-  const [loading, setLoading] = useState(false); // Trạng thái tải dữ liệu
+  const [editingCategory, setEditingCategory] = useState(null);
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  // Fetch categories from API on component load
+  // Fetch categories from API
   useEffect(() => {
     const fetchCategories = async () => {
       setLoading(true);
       try {
-        const response = await fetch("http://localhost:3000/api/admin/categories");
-        const data = await response.json();
-        setCategories(data);
+        const response = await API.get("/admin/categories");
+        setCategories(response.data);
       } catch (error) {
-        console.error("Lỗi khi lấy danh sách danh mục:", error);
+        console.error("Error fetching categories:", error);
       } finally {
         setLoading(false);
       }
@@ -35,83 +37,48 @@ function CategoryList() {
   };
 
   const handleLogout = () => {
-    console.log("Đăng xuất thành công");
     navigate("/login");
   };
 
   const handleAddCategory = async (newCategory) => {
     try {
-      const response = await fetch("http://localhost:3000/api/admin/category", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(newCategory),
-      });
-
-      if (!response.ok) {
-        throw new Error("Lỗi khi thêm danh mục");
-      }
-
-      const createdCategory = await response.json();
-      setCategories([...categories, createdCategory]);
+      const response = await API.post("/admin/category", newCategory);
+      setCategories([...categories, response.data]);
     } catch (error) {
-      console.error(error.message);
+      console.error("Error adding category:", error);
     }
-
     setIsFormOpen(false);
   };
 
   const handleEditCategory = async (updatedCategory) => {
     try {
-      const response = await fetch(
-        `http://localhost:3000/api/admin/category/${updatedCategory.id}`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(updatedCategory),
-        }
+      const response = await API.put(
+        `/admin/category/${updatedCategory.id}`,
+        updatedCategory
       );
-
-      if (!response.ok) {
-        throw new Error("Lỗi khi cập nhật danh mục");
-      }
-
-      const updatedData = await response.json();
       setCategories(
         categories.map((category) =>
-          category.id === updatedData.id ? updatedData : category
+          category.id === updatedCategory.id ? response.data : category
         )
       );
     } catch (error) {
-      console.error(error.message);
+      console.error("Error editing category:", error);
     }
-
-    setEditingCategory(null);
     setIsFormOpen(false);
+    setEditingCategory(null);
   };
 
   const handleDeleteCategory = async (id) => {
-    const isConfirmed = window.confirm("Bạn có chắc chắn muốn xóa danh mục này?");
+    const isConfirmed = window.confirm(
+      "Are you sure you want to delete this category?"
+    );
     if (!isConfirmed) return;
 
     try {
-      const response = await fetch(
-        `http://localhost:3000/api/admin/category/${id}`,
-        {
-          method: "DELETE",
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error("Lỗi khi xóa danh mục");
-      }
-
+      await API.delete(`/admin/category/${id}`);
       setCategories(categories.filter((category) => category.id !== id));
     } catch (error) {
-      console.error(error.message);
+      console.error("Error deleting category:", error);
     }
   };
 
@@ -123,22 +90,22 @@ function CategoryList() {
   return (
     <div className="home-container">
       <header className="home-header">
-        <div className="logo">Quản lý danh mục</div>
+        <div className="logo">Trang chủ admin</div>
         <div className="left-section">
           {!isMenuOpen && (
             <div className="menu-button" onClick={toggleMenu}>
-              <span>☰</span> Menu
+              <FontAwesomeIcon icon={faBars} /> Menu
             </div>
           )}
           {isMenuOpen && (
             <div className={`menu-container ${isMenuOpen ? "open" : ""}`}>
               <button className="close-button" onClick={toggleMenu}>
-                ✖ Đóng
+                <FontAwesomeIcon icon={faBars} />
               </button>
               <ul className="menu-list">
-                <li onClick={() => navigate("/")}>Dashboard</li>
+                <li onClick={() => navigate("/home")}>Dashboard</li>
                 <li onClick={() => navigate("/products")}>Quản lý sản phẩm</li>
-                <li onClick={() => navigate("/categories")}>Quản lý danh mục</li>
+                <li onClick={() => navigate("/categories")}>Quản lý mục lục</li>
                 <li onClick={() => navigate("/users")}>Quản lý người dùng</li>
                 <li onClick={() => navigate("/orders")}>Quản lý đơn hàng</li>
               </ul>
@@ -171,21 +138,22 @@ function CategoryList() {
           )}
         </div>
       </header>
+
       <div className="categories-container">
-        <h1>Quản lý danh mục</h1>
+        <h1>Manage Categories</h1>
         <button className="add-button" onClick={() => openForm()}>
-          Thêm danh mục
+          <FontAwesomeIcon icon={faPlus} /> Add Category
         </button>
         {loading ? (
-          <p>Đang tải...</p>
+          <p>Loading...</p>
         ) : (
           <table className="categories-table">
             <thead>
               <tr>
                 <th>ID</th>
-                <th>Tên danh mục</th>
-                <th>Mô tả</th>
-                <th>Hành động</th>
+                <th>Category Name</th>
+                <th>Description</th>
+                <th>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -195,9 +163,17 @@ function CategoryList() {
                   <td>{category.name}</td>
                   <td>{category.description}</td>
                   <td>
-                    <button onClick={() => openForm(category)}>Sửa</button>
-                    <button onClick={() => handleDeleteCategory(category.id)}>
-                      Xóa
+                    <button
+                      className="action-icon"
+                      onClick={() => openForm(category)}
+                    >
+                      <FontAwesomeIcon icon={faEdit} title="Edit" />
+                    </button>
+                    <button
+                      className="action-icon"
+                      onClick={() => handleDeleteCategory(category.id)}
+                    >
+                      <FontAwesomeIcon icon={faTrash} title="Delete" />
                     </button>
                   </td>
                 </tr>
