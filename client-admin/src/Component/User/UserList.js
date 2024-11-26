@@ -1,77 +1,115 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import UserForm from "./UserForm";
 import { useNavigate } from "react-router-dom";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faEdit, faTrash, faBars } from "@fortawesome/free-solid-svg-icons";
 import "./Users.css";
+import API from "../../api/api";
 
 function UserList() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [activeSubMenu, setActiveSubMenu] = useState(null);
+  const [users, setUsers] = useState([
+    {
+      id: 1,
+      name: "Nguyễn Văn A",
+      email: "nguyenvana@example.com",
+      role: "Quản trị viên",
+    },
+    {
+      id: 2,
+      name: "Trần Thị B",
+      email: "tranthib@example.com",
+      role: "Người dùng",
+    },
+  ]);
+  const [editingUser, setEditingUser] = useState(null);
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState({ show: false, id: null });
+  const [loading, setLoading] = useState(false);
+
   const navigate = useNavigate();
 
-  const toggleMenu = () => {
-    setIsMenuOpen(!isMenuOpen);
-  };
+  // Chuyển đổi menu
+  const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
 
-  const toggleSubMenu = (index) => {
-    setActiveSubMenu(activeSubMenu === index ? null : index);
-  };
-
+  // Xử lý đăng xuất
   const handleLogout = () => {
     console.log("Đăng xuất thành công");
     navigate("/login");
   };
 
-  const [users, setUsers] = useState([
-    { id: 1, name: "Nguyễn Văn A", email: "vana@example.com", role: "Admin" },
-    { id: 2, name: "Trần Thị B", email: "thib@example.com", role: "User" },
-  ]);
-  const [editingUser, setEditingUser] = useState(null);
-  const [isFormOpen, setIsFormOpen] = useState(false);
-  const [confirmDelete, setConfirmDelete] = useState({ show: false, id: null });
+  // Lấy danh sách người dùng từ API
+  useEffect(() => {
+    const fetchUsers = async () => {
+      setLoading(true);
+      try {
+        const response = await API.get("/admin/users");
+        setUsers(response.data);
+      } catch (error) {
+        console.error("Lỗi khi lấy danh sách người dùng:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchUsers();
+  }, []);
 
-  const handleAddUser = (newUser) => {
-    setUsers([...users, { ...newUser, id: Date.now() }]);
-    setIsFormOpen(false);
-  };
-
-  const handleEditUser = (updatedUser) => {
-    setUsers(
-      users.map((user) => (user.id === updatedUser.id ? updatedUser : user))
-    );
+  // Chỉnh sửa người dùng
+  const handleEditUser = async (updatedUser) => {
+    try {
+      const response = await API.put(`/admin/user/${updatedUser.id}`, updatedUser);
+      setUsers((prevUsers) =>
+        prevUsers.map((user) => (user.id === updatedUser.id ? response.data : user))
+      );
+    } catch (error) {
+      console.error("Lỗi khi chỉnh sửa người dùng:", error);
+    }
     setEditingUser(null);
     setIsFormOpen(false);
   };
 
-  const handleDeleteUser = () => {
-    setUsers(users.filter((user) => user.id !== confirmDelete.id));
+  // Xóa người dùng
+  const handleDeleteUser = async () => {
+    try {
+      await API.delete(`/admin/user/${confirmDelete.id}`);
+      setUsers((prevUsers) => prevUsers.filter((user) => user.id !== confirmDelete.id));
+    } catch (error) {
+      console.error("Lỗi khi xóa người dùng:", error);
+    }
     setConfirmDelete({ show: false, id: null });
   };
 
-  const openForm = (user = null) => {
+  // Mở form chỉnh sửa người dùng
+  const openEditForm = (user) => {
     setEditingUser(user);
     setIsFormOpen(true);
   };
 
+  // Mở modal xác nhận xóa
+  const openDeleteConfirm = (id) => {
+    setConfirmDelete({ show: true, id });
+  };
+
   return (
-    <div className="home-container">
+    <div className="users-container">
+      {/* Header */}
       <header className="home-header">
         <div className="logo">Quản lý người dùng</div>
         <div className="left-section">
-          {!isMenuOpen && (
+          {!isMenuOpen ? (
             <div className="menu-button" onClick={toggleMenu}>
-              <span>☰</span> Menu
+              <FontAwesomeIcon icon={faBars} /> Menu
             </div>
-          )}
-          {isMenuOpen && (
+          ) : (
             <div className={`menu-container ${isMenuOpen ? "open" : ""}`}>
               <button className="close-button" onClick={toggleMenu}>
-                ✖ Đóng
+                <FontAwesomeIcon icon={faBars} />
               </button>
               <ul className="menu-list">
-                <li onClick={() => navigate('/')}>Dashboard</li>
+                <li onClick={() => navigate("/home")}>Dashboard</li>
                 <li onClick={() => navigate("/products")}>Quản lý sản phẩm</li>
-                <li onClick={() => navigate("/categories")}>Quản lý mục lục</li>
+                <li onClick={() => navigate("/categories")}>Quản lý danh mục</li>
                 <li onClick={() => navigate("/users")}>Quản lý người dùng</li>
                 <li onClick={() => navigate("/orders")}>Quản lý đơn hàng</li>
               </ul>
@@ -104,68 +142,110 @@ function UserList() {
           )}
         </div>
       </header>
-      <div className="users-container">
-        <button className="add-button" onClick={() => openForm()}>
-          Thêm người dùng
-        </button>
-        <table className="users-table">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Tên</th>
-              <th>Email</th>
-              <th>Vai trò</th>
-              <th>Hành động</th>
-            </tr>
-          </thead>
-          <tbody>
-            {users.map((user) => (
-              <tr key={user.id}>
-                <td>{user.id}</td>
-                <td>{user.name}</td>
-                <td>{user.email}</td>
-                <td>{user.role}</td>
-                <td>
-                  <button onClick={() => openForm(user)}>Sửa</button>
-                  <button
-                    onClick={() =>
-                      setConfirmDelete({ show: true, id: user.id })
-                    }
-                  >
-                    Xóa
-                  </button>
-                </td>
+
+      {/* Danh sách người dùng */}
+      <div className="users-content">
+        <h1>Danh sách người dùng</h1>
+        {loading ? (
+          <p>Đang tải...</p>
+        ) : (
+          <table className="users-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Tên</th>
+                <th>Email</th>
+                <th>Vai trò</th>
+                <th>Hành động</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-        {isFormOpen && (
-          <UserForm
-            user={editingUser}
-            onSave={editingUser ? handleEditUser : handleAddUser}
-            onCancel={() => setIsFormOpen(false)}
-          />
-        )}
-        {confirmDelete.show && (
-          <div className="confirm-overlay">
-            <div className="confirm-box">
-              <h2>Xác nhận xóa</h2>
-              <p>Bạn có chắc chắn muốn xóa người dùng này?</p>
-              <div className="confirm-actions">
-                <button className="confirm-button" onClick={handleDeleteUser}>
-                  Xóa
-                </button>
-                <button
-                  className="cancel-button"
-                  onClick={() => setConfirmDelete({ show: false, id: null })}
-                >
-                  Hủy
-                </button>
-              </div>
-            </div>
-          </div>
+            </thead>
+            <tbody>
+              {users.map((user) => (
+                <tr key={user.id}>
+                  <td>{user.id}</td>
+                  <td>{user.name}</td>
+                  <td>{user.email}</td>
+                  <td>{user.role}</td>
+                  <td>
+                    <button
+                      className="action-icon"
+                      onClick={() => openEditForm(user)}
+                    >
+                      <FontAwesomeIcon icon={faEdit} title="Sửa" />
+                    </button>
+                    <button
+                      className="action-icon"
+                      onClick={() => openDeleteConfirm(user.id)}
+                    >
+                      <FontAwesomeIcon icon={faTrash} title="Xóa" />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         )}
       </div>
+
+      {/* Form chỉnh sửa người dùng */}
+      {isFormOpen && (
+        <div className="modal-overlay">
+          <div className="modal-box">
+            <h2>{editingUser ? "Chỉnh sửa thông tin người dùng" : "Thêm người dùng mới"}</h2>
+            <form>
+              <div className="form-group">
+                <label htmlFor="name">Tên:</label>
+                <input
+                  type="text"
+                  id="name"
+                  value={editingUser?.name || ""}
+                  placeholder="Nhập tên người dùng"
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="email">Email:</label>
+                <input
+                  type="email"
+                  id="email"
+                  value={editingUser?.email || ""}
+                  placeholder="Nhập email người dùng"
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="role">Vai trò:</label>
+                <select id="role" value={editingUser?.role || ""}>
+                  <option value="admin">Admin</option>
+                  <option value="user">User</option>
+                </select>
+              </div>
+            
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal xác nhận xóa */}
+      {confirmDelete.show && (
+        <div className="modal-overlay">
+          <div className="modal-box">
+            <h2>Xác nhận xóa</h2>
+            <p>Bạn có chắc chắn muốn xóa người dùng này?</p>
+            <div className="confirm-actions">
+              <button className="delete-button" onClick={handleDeleteUser}>
+                Xóa
+              </button>
+              <button
+                className="cancel-button"
+                onClick={() => setConfirmDelete({ show: false, id: null })}
+              >
+                Hủy
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
