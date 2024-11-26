@@ -1,20 +1,85 @@
-import React, { useState } from "react";
-import ProductForm from "./ProductForm";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faBars, faEdit, faTrash, faPlus } from "@fortawesome/free-solid-svg-icons";
+import API from "../../api/api";
 import "./Products.css";
+import ProductForm from "./ProductForm";
 
 function ProductList() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [products, setProducts] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [activeSubMenu, setActiveSubMenu] = useState(null);
   const navigate = useNavigate();
 
-  const toggleMenu = () => {
-    setIsMenuOpen(!isMenuOpen);
+  useEffect(() => {
+    fetchProducts();
+    fetchCategories();
+  }, []);
+
+  // Fetch products from API
+  const fetchProducts = async () => {
+    try {
+      const response = await API.get("/admin/products");
+      setProducts(response.data);
+    } catch (error) {
+      console.error("Error fetching products:", error);
+    }
   };
 
-  const toggleSubMenu = (index) => {
-    setActiveSubMenu(activeSubMenu === index ? null : index);
+  // Fetch categories from API
+  const fetchCategories = async () => {
+    try {
+      const response = await API.get("/admin/categories");
+      setCategories(response.data);
+    } catch (error) {
+      console.error("Error fetching categories:", error);
+    }
+  };
+
+  // Add or edit product
+  const handleSaveProduct = async (product) => {
+    try {
+      if (product.id) {
+        await API.put(`/admin/product/${product.id}`, product);
+      } else {
+        await API.post("/admin/product", product);
+      }
+      setIsFormOpen(false);
+      fetchProducts(); // Refresh product list
+    } catch (error) {
+      console.error("Error saving product:", error);
+    }
+  };
+
+  // Delete product
+  const handleDeleteProduct = async (id) => {
+    try {
+      await API.delete(`/admin/product/${id}`);
+      fetchProducts(); // Refresh product list
+    } catch (error) {
+      console.error("Error deleting product:", error);
+    }
+  };
+
+  // Open form to add a new product
+  const handleAddProduct = () => {
+    setSelectedProduct(null);
+    setIsFormOpen(true);
+  };
+
+  // Open form to edit an existing product
+  const handleEditProduct = (product) => {
+    setSelectedProduct(product);
+    setIsFormOpen(true);
+  };
+
+  // Close form
+  const handleCancel = () => {
+    setIsFormOpen(false);
   };
 
   const handleLogout = () => {
@@ -22,60 +87,27 @@ function ProductList() {
     navigate("/login");
   };
 
-  const [products, setProducts] = useState([
-    { id: 1, name: "Sản phẩm A", price: 100, categoryId: 1 },
-    { id: 2, name: "Sản phẩm B", price: 200, categoryId: 2 },
-  ]);
-  const [categories] = useState([
-    { id: 1, name: "Danh mục A" },
-    { id: 2, name: "Danh mục B" },
-  ]);
-  const [editingProduct, setEditingProduct] = useState(null);
-  const [isFormOpen, setIsFormOpen] = useState(false);
-  const [confirmDelete, setConfirmDelete] = useState({ show: false, id: null });
-
-  const handleAddProduct = (newProduct) => {
-    setProducts([...products, { ...newProduct, id: Date.now() }]);
-    setIsFormOpen(false);
-  };
-
-  const handleEditProduct = (updatedProduct) => {
-    setProducts(
-      products.map((product) =>
-        product.id === updatedProduct.id ? updatedProduct : product
-      )
-    );
-    setEditingProduct(null);
-    setIsFormOpen(false);
-  };
-
-  const handleDeleteProduct = () => {
-    setProducts(products.filter((product) => product.id !== confirmDelete.id));
-    setConfirmDelete({ show: false, id: null });
-  };
-
-  const openForm = (product = null) => {
-    setEditingProduct(product);
-    setIsFormOpen(true);
+  const toggleMenu = () => {
+    setIsMenuOpen(!isMenuOpen);
   };
 
   return (
-    <div className="home-container">
+    <div className="products-container">
       <header className="home-header">
-        <div className="logo">Quản lý sản phẩm</div>
+        <div className="logo">Trang chủ admin</div>
         <div className="left-section">
           {!isMenuOpen && (
             <div className="menu-button" onClick={toggleMenu}>
-              <span>☰</span> Menu
+              <FontAwesomeIcon icon={faBars} /> Menu
             </div>
           )}
           {isMenuOpen && (
             <div className={`menu-container ${isMenuOpen ? "open" : ""}`}>
               <button className="close-button" onClick={toggleMenu}>
-                ✖ Đóng
+                <FontAwesomeIcon icon={faBars} />
               </button>
               <ul className="menu-list">
-                <li onClick={() => navigate('/')}>Dashboard</li>
+                <li onClick={() => navigate("/home")}>Dashboard</li>
                 <li onClick={() => navigate("/products")}>Quản lý sản phẩm</li>
                 <li onClick={() => navigate("/categories")}>Quản lý mục lục</li>
                 <li onClick={() => navigate("/users")}>Quản lý người dùng</li>
@@ -110,9 +142,11 @@ function ProductList() {
           )}
         </div>
       </header>
-      <div className="products-container">
-        <button className="add-button" onClick={() => openForm()}>
-          Thêm sản phẩm
+
+      <main className="main-content">
+        <h1>Quản lý sản phẩm</h1>
+        <button className="add-button" onClick={handleAddProduct}>
+          <FontAwesomeIcon icon={faPlus} /> Thêm sản phẩm
         </button>
         <table className="products-table">
           <thead>
@@ -120,6 +154,7 @@ function ProductList() {
               <th>ID</th>
               <th>Tên sản phẩm</th>
               <th>Giá</th>
+              <th>Số lượng</th>
               <th>Danh mục</th>
               <th>Hành động</th>
             </tr>
@@ -130,56 +165,39 @@ function ProductList() {
                 <td>{product.id}</td>
                 <td>{product.name}</td>
                 <td>{product.price}₫</td>
+                <td>{product.stock}</td>
                 <td>
-                  {
-                    categories.find(
-                      (category) => category.id === product.categoryId
-                    )?.name || "Không có danh mục"
-                  }
+                  {categories.find((cat) => cat.id === product.categoryId)?.name ||
+                    "Không xác định"}
                 </td>
                 <td>
-                  <button onClick={() => openForm(product)}>Sửa</button>
                   <button
-                    onClick={() =>
-                      setConfirmDelete({ show: true, id: product.id })
-                    }
+                    className="action-icon"
+                    onClick={() => handleEditProduct(product)}
                   >
-                    Xóa
+                    <FontAwesomeIcon icon={faEdit} title="Sửa" />
+                  </button>
+                  <button
+                    className="action-icon"
+                    onClick={() => handleDeleteProduct(product.id)}
+                  >
+                    <FontAwesomeIcon icon={faTrash} title="Xóa" />
                   </button>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
-        {isFormOpen && (
-          <ProductForm
-            product={editingProduct}
-            categories={categories}
-            onSave={editingProduct ? handleEditProduct : handleAddProduct}
-            onCancel={() => setIsFormOpen(false)}
-          />
-        )}
-        {confirmDelete.show && (
-          <div className="confirm-overlay">
-            <div className="confirm-box">
-              <span className="confirm-icon">⚠️</span>
-              <h2>Xác nhận xóa</h2>
-              <p>Bạn có chắc chắn muốn xóa sản phẩm này?</p>
-              <div className="confirm-actions">
-                <button className="confirm-button" onClick={handleDeleteProduct}>
-                  Xóa
-                </button>
-                <button
-                  className="cancel-button"
-                  onClick={() => setConfirmDelete({ show: false, id: null })}
-                >
-                  Hủy
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
+      </main>
+
+      {isFormOpen && (
+        <ProductForm
+          product={selectedProduct}
+          categories={categories}
+          onSave={handleSaveProduct}
+          onCancel={handleCancel}
+        />
+      )}
     </div>
   );
 }
