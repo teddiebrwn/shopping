@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import axios from "axios";
+import API from "../../api/api";
 import "./Login.css";
 
 function Login() {
@@ -21,8 +21,8 @@ function Login() {
         setError("Vui lòng nhập email và mật khẩu!");
         return;
       }
-      const response = await axios.post(
-        "http://localhost:3000/api/auth/login",
+      const response = await API.post(
+        "/auth/login",
         {
           email,
           password,
@@ -54,8 +54,8 @@ function Login() {
         setError("Vui lòng nhập email để nhận hướng dẫn đặt lại mật khẩu!");
         return;
       }
-      await axios.post(
-        "http://localhost:3000/api/auth/request-password-reset",
+      await API.post(
+        "/auth/request-password-reset",
         {
           email: forgotPasswordEmail,
         }
