@@ -30,7 +30,7 @@ function Login() {
       );
       console.log("Đăng nhập thành công:", response.data);
       alert("Đăng nhập thành công!");
-      navigate("/");
+      navigate("/home");
     } catch (error) {
       setError(error.response?.data?.message || "Đã xảy ra lỗi khi đăng nhập!");
     }
