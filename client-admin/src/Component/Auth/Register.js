@@ -1,123 +1,219 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import API from "../../api/api";
+import "./Register.css";
 
 const Register = () => {
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    birthday: "",
-    username: "",
-    password: "",
-    gender: "",
-    address: "",
-    city: "",
-    country: "",
-  });
-  const [error, setError] = useState("");
-  const [message, setMessage] = useState("");
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-  const handleRegister = async () => {
-    try {
-      const payload = { ...formData, role: "user" };
-      const response = await API.post("/auth/register", payload);
-      setMessage(
-        response.data.message ||
-          "Registration successful! Please verify your account."
-      );
-      setError("");
-      localStorage.setItem(
-        "emailOrUsername",
-        formData.email || formData.username
-      );
-      setTimeout(() => {
-        window.location.href = "/verify";
-      }, 2000);
-    } catch (err) {
-      setError(
-        err.response?.data?.message || "Registration failed. Please try again."
-      );
-      setMessage("");
-    }
-  };
-  return (
-    <div>
-      <h2>Register</h2>
-      {error && <p style={{ color: "red" }}>{error}</p>}
-      {message && <p style={{ color: "green" }}>{message}</p>}{" "}
-      <form>
-        <input
-          type="text"
-          name="name"
-          placeholder="Name"
-          value={formData.name}
-          onChange={handleChange}
-        />
-        <input
-          type="email"
-          name="email"
-          placeholder="Email"
-          value={formData.email}
-          onChange={handleChange}
-        />
-        <input
-          type="date"
-          name="birthday"
-          placeholder="Birthday"
-          value={formData.birthday}
-          onChange={handleChange}
-        />
-        <input
-          type="text"
-          name="username"
-          placeholder="Username"
-          value={formData.username}
-          onChange={handleChange}
-        />
-        <input
-          type="password"
-          name="password"
-          placeholder="Password"
-          value={formData.password}
-          onChange={handleChange}
-        />
-        <select name="gender" value={formData.gender} onChange={handleChange}>
-          <option value="">Select Gender</option>
-          <option value="male">Male</option>
-          <option value="female">Female</option>
-          <option value="other">Other</option>
-        </select>
-        <input
-          type="text"
-          name="address"
-          placeholder="Address"
-          value={formData.address}
-          onChange={handleChange}
-        />
-        <input
-          type="text"
-          name="city"
-          placeholder="City"
-          value={formData.city}
-          onChange={handleChange}
-        />
-        <input
-          type="text"
-          name="country"
-          placeholder="Country"
-          value={formData.country}
-          onChange={handleChange}
-        />
-        <button type="button" onClick={handleRegister}>
-          Register
-        </button>
-      </form>
-      <p>
-        Already have an account? <a href="/login">Login here</a>
-      </p>
-    </div>
-  );
+    const navigate = useNavigate();
+
+    const [formData, setFormData] = useState({
+        gender: "",
+        name: "",
+        username: "",
+        email: "",
+        birthday: "",
+        password: "",
+        confirmPassword: "",
+        address: "",
+        city: "",
+        country: "",
+    });
+    const [error, setError] = useState("");
+    const [message, setMessage] = useState("");
+
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+
+        setFormData((prevState) => ({
+            ...prevState,
+            [name]: name === "username" ? value.replace(/^@/, "") : value,
+        }));
+    };
+
+    const handleRegister = async () => {
+        try {
+            const payload = { ...formData };
+            const response = await API.post("/auth/register", payload);
+            setMessage(
+                response.data.message ||
+                    "Registration successful! Please verify your account."
+            );
+            setError("");
+            setTimeout(() => {
+                window.location.href = "/verify";
+            }, 2000);
+        } catch (err) {
+            setError(
+                err.response?.data?.message ||
+                    "Registration failed. Please try again."
+            );
+            setMessage("");
+        }
+    };
+
+    return (
+        <>
+            {/* Navigation Bar */}
+            <div className="register-navigation">
+                <a className="nav-link active" onClick={() => navigate("/login")}>
+                    ALREADY REGISTERED?
+                </a>
+                <a className="nav-link" onClick={() => navigate("/register")}>
+                    CREATE YOUR ACCOUNT
+                </a>
+            </div>
+
+            {/* Register Form */}
+            <div className="register-container">
+                {error && <p className="error-message">{error}</p>}
+                {message && <p className="success-message">{message}</p>}
+                <form>
+                    {/* Name */}
+                    <div className="input-group">
+                        <input
+                            type="text"
+                            name="name"
+                            placeholder=" "
+                            value={formData.name}
+                            onChange={handleChange}
+                        />
+                        <label>Your Name *</label>
+                    </div>
+
+                    {/* Username */}
+                    <div className="input-group">
+                        <input
+                            type="text"
+                            name="username"
+                            placeholder=" "
+                            value={formData.username ? `@${formData.username}` : ""}
+                            onChange={handleChange}
+                        />
+                        <label>Username *</label>
+                    </div>
+
+                    {/* Gender */}
+                    <div className="gender-group">
+                        <label className="form-label">Gender *</label>
+                        <div className="gender-options">
+                            <label>
+                                <input
+                                    type="radio"
+                                    name="gender"
+                                    value="Male"
+                                    onChange={handleChange}
+                                />
+                                Male
+                            </label>
+                            <label>
+                                <input
+                                    type="radio"
+                                    name="gender"
+                                    value="Female"
+                                    onChange={handleChange}
+                                />
+                                Female
+                            </label>
+                            <label>
+                                <input
+                                    type="radio"
+                                    name="gender"
+                                    value="Non-binary"
+                                    onChange={handleChange}
+                                />
+                                Non-binary
+                            </label>
+                        </div>
+                    </div>
+
+                    {/* Birthday */}
+                    <div className="input-group">
+                        <input
+                            type="date"
+                            name="birthday"
+                            value={formData.birthday}
+                            onChange={handleChange}
+                        />
+                        <label>Day of birth *</label>
+                    </div>
+
+                    {/* Email */}
+                    <div className="input-group">
+                        <input
+                            type="email"
+                            name="email"
+                            placeholder=" "
+                            value={formData.email}
+                            onChange={handleChange}
+                        />
+                        <label>Email Address *</label>
+                    </div>
+
+                    {/* Password */}
+                    <div className="input-group">
+                        <input
+                            type="password"
+                            name="password"
+                            placeholder=" "
+                            value={formData.password}
+                            onChange={handleChange}
+                        />
+                        <label>Password *</label>
+                    </div>
+                    <div className="input-group">
+                        <input
+                            type="password"
+                            name="confirmPassword"
+                            placeholder=" "
+                            value={formData.confirmPassword}
+                            onChange={handleChange}
+                        />
+                        <label>Confirm Password *</label>
+                    </div>
+                    
+                    {/* Address */}
+                    <div className="input-group">
+                        <input
+                            type="text"
+                            name="address"
+                            placeholder=" "
+                            value={formData.address}
+                            onChange={handleChange}
+                        />
+                        <label>Address</label>
+                    </div>
+
+                    {/* City */}
+                    <div className="input-group">
+                        <input
+                            type="text"
+                            name="city"
+                            placeholder=" "
+                            value={formData.city}
+                            onChange={handleChange}
+                        />
+                        <label>City</label>
+                    </div>
+
+                    {/* Country */}
+                    <div className="input-group">
+                        <input
+                            type="text"
+                            name="country"
+                            placeholder=" "
+                            value={formData.country}
+                            onChange={handleChange}
+                        />
+                        <label>Country</label>
+                    </div>
+
+                    <button type="button" onClick={handleRegister}>
+                        Register
+                    </button>
+                </form>
+            </div>
+        </>
+    );
 };
 
 export default Register;
