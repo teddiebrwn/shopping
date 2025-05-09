@@ -16,7 +16,6 @@ export default function Home() {
         <p className="text-xs sm:text-sm md:text-base text-center text-neutral-500">
           hi i&apos;m tranvu — an indie dev who keeps it minimal.
         </p>
-        {/* social media */}
 
         <Link
           href="https://x.com/tranvu_dev?s=21"
